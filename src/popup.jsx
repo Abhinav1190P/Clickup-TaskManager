@@ -10,15 +10,23 @@ import {
     DrawerContent,
     Select,
     DrawerCloseButton,
-    Text, Divider, FormControl, Input, Heading, Button, FormLabel
+    Text, Divider, FormControl, Input, Heading, Button, FormLabel, Textarea, Icon, Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalFooter,
+    ModalBody,
+    ModalCloseButton,
 } from '@chakra-ui/react'
 import ReactDOM from 'react-dom/client'
+import { BsTags } from 'react-icons/bs'
 
 
 
 
 function Popup() {
     const { isOpen, onOpen, onClose } = useDisclosure()
+    const { isOpen: MOpen, onOpen: MOnOpen, onClose: MOnClose } = useDisclosure()
     const btnRef = React.useRef()
 
     const [j, setJ] = useState('')
@@ -27,7 +35,8 @@ function Popup() {
 
     const [createTask, setCreateTask] = useState(false)
 
-    console.log(createTask)
+    const [showTag, setShowTag] = useState(false)
+
 
     chrome.storage.sync.get('text', function (text) {
         setJ(text.text)
@@ -98,7 +107,7 @@ function Popup() {
     ]
 
 
-    return (
+    return (AccessToken) ? (
         <Box w="400px" h="500px">
 
             <VStack w="100%" h="100%">
@@ -246,8 +255,9 @@ function Popup() {
 
                                 <HStack
                                     marginTop={'10px'}
-                                    w="100%" h="25%">
-                                    <FormControl w="20%">
+                                    w="100%" h="25%" justifyContent={'space-between'}>
+
+                                    <FormControl w="30%">
                                         <FormLabel fontSize={'15px'}>
                                             Space
                                         </FormLabel>
@@ -258,7 +268,7 @@ function Popup() {
                                         </Select>
                                     </FormControl>
 
-                                    <FormControl w="60%" fontSize={'15px'}>
+                                    <FormControl w="30%" fontSize={'15px'}>
                                         <FormLabel>
                                             Folder
                                         </FormLabel>
@@ -269,7 +279,7 @@ function Popup() {
                                         </Select>
                                     </FormControl>
 
-                                    <FormControl w="20%" fontSize={'15px'}>
+                                    <FormControl w="30%" fontSize={'15px'}>
                                         <FormLabel>
                                             List
                                         </FormLabel>
@@ -280,9 +290,43 @@ function Popup() {
                                         </Select>
                                     </FormControl>
                                 </HStack>
+
+                                <Box w="100%" h="25%">
+                                    <Textarea
+                                        h="100%"
+                                        placeholder='Task description' />
+                                </Box>
+
+                                <Box w="100%" h="5%" px={2}
+                                    cursor={'pointer'}>
+                                    <Icon
+                                        onClick={() => {setShowTag(!showTag);MOnOpen()}}
+                                        borderRadius={'5'}
+                                        as={BsTags} size={'sm'} />
+                                </Box>
+
                             </VStack>
+                           
+
                         </DrawerBody>
 
+                        <Modal isOpen={MOpen} onClose={MOnClose}>
+                                <ModalOverlay />
+                                <ModalContent  w="300px">
+                                    <ModalHeader>Modal Title</ModalHeader>
+                                    <ModalCloseButton />
+                                    <ModalBody>
+                                            JEy
+                                    </ModalBody>
+
+                                    <ModalFooter>
+                                        <Button colorScheme='blue' mr={3} onClick={MOnClose}>
+                                            Close
+                                        </Button>
+                                        <Button variant='ghost'>Secondary Action</Button>
+                                    </ModalFooter>
+                                </ModalContent>
+                            </Modal>
                         <DrawerFooter>
                             <Button variant='outline' mr={3} onClick={onClose}>
                                 Cancel
@@ -296,7 +340,11 @@ function Popup() {
 
 
         </Box>
-    )
+    ) : (<Box>
+        Login
+    </Box>)
+
+
 }
 
 
