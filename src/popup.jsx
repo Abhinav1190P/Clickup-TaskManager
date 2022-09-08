@@ -1,16 +1,31 @@
 import React, { useEffect, useState } from 'react'
-import { Box, ChakraProvider, VStack, Flex, HStack, Image, Icon, Text, Divider, FormControl, Input, Heading, Button } from '@chakra-ui/react'
+import {
+    Box, ChakraProvider, VStack, Flex, HStack, Image,
+    Drawer,
+    DrawerBody,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerOverlay,
+    useDisclosure,
+    DrawerContent,
+    Select,
+    DrawerCloseButton,
+    Text, Divider, FormControl, Input, Heading, Button, FormLabel
+} from '@chakra-ui/react'
 import ReactDOM from 'react-dom/client'
-import axios from 'axios'
+
 
 
 
 function Popup() {
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const btnRef = React.useRef()
+
     const [j, setJ] = useState('')
     const [Code, setCode] = useState('')
     const [AccessToken, setAccessToken] = useState('')
 
-    const [createTask,setCreateTask] = useState(false)
+    const [createTask, setCreateTask] = useState(false)
 
     console.log(createTask)
 
@@ -24,10 +39,11 @@ function Popup() {
 
 
 
+
     useEffect(() => {
-        if (typeof(Code) == undefined) {
+        if (typeof (Code) == undefined) {
             const GetMyAccessToken = async () => {
-                
+
                 const data = await fetch(`https://api.clickup.com/api/v2/oauth/token?client_id=BZZXK4XXFJY7N4W2DUHC51GJUXXTZJV6&client_secret=NNTF60UY0728Z2XPM0YXKJGCVQIHFP69A1TTV2UGJWYMNPU9B60C5MAFTFI8T3NL&code=${Code}`, {
                     method: 'POST',
                     cache: 'no-cache',
@@ -40,17 +56,19 @@ function Popup() {
             }
             GetMyAccessToken()
         }
-        
+        else {
+            console.log("Hello")
+        }
 
     }, [Code])
 
     chrome.storage.sync.get('access_token', function (access_token) {
-        if(access_token){
+        if (access_token) {
             setAccessToken(access_token.access_token)
         }
     })
 
-    
+
 
     const RecentDocs = [
         {
@@ -78,31 +96,12 @@ function Popup() {
             last_updated: "04-09-2022"
         }
     ]
-    
+
 
     return (
         <Box w="400px" h="500px">
-            {
-                createTask ? (
-                    <VStack w="100%" h="100%">
-                <Box w="100%" h="10%">
-                    <Flex w="100%" h="100%" alignItems={'center'} justifyContent={'flex-start'}>
-                        <Box w="50%" h="100%" >
-                            <HStack p={3} w="100%" h="100%">
-                                <Image
-                                    w="70%"
-                                    src='./clickup.png' alt="clickup" />
-                            </HStack>
 
-                        </Box>
-
-                    </Flex>
-                </Box>
-                
-
-            </VStack>
-                ):(
-                    <VStack w="100%" h="100%">
+            <VStack w="100%" h="100%">
                 <Box w="100%" h="10%">
                     <Flex w="100%" h="100%" alignItems={'center'} justifyContent={'flex-start'}>
                         <Box w="50%" h="100%" >
@@ -128,7 +127,6 @@ function Popup() {
                                 py={3}
                                 fontSize={'lg'} fontWeight={700} fontFamily={'monospace'}>
                                 Recent Tasks
-
                             </Text>
 
                             <Flex w="40%" h="100%" alignItems={'center'} justifyContent={'center'}>
@@ -179,20 +177,124 @@ function Popup() {
                 <Box w="100%" h="10%">
                     <Flex w="100%" h="100%" alignItems={'flex-start'} justifyContent={'center'}>
                         <Button
+                            ref={btnRef}
                             boxShadow={'xl'}
                             color={'white'}
                             bg={"rgb(159, 122, 234)"}
-                            onClick={()=>{setCreateTask(!createTask)}}
+                            onClick={onOpen}
                         >
                             + Create a task
                         </Button>
                     </Flex>
                 </Box>
+                <Drawer
+                    isOpen={isOpen}
+                    placement='bottom'
+                    onClose={onClose}
+                    finalFocusRef={btnRef}
+                >
+                    <DrawerOverlay />
+                    <DrawerContent
+                        h="470px"
+                    >
+
+                        <DrawerHeader h="50px">
+                            <HStack w="100%">
+                                <Text color={'red.400'}
+                                    w="20%"
+                                    fontFamily={'monospace'}
+                                    fontSize={'md'}
+                                    fontWeight={600}>
+                                    Cancel
+                                </Text>
+                                <Flex
+                                    w="60%" alignItems={'center'} justifyContent={'center'}>
+                                    <Text
+                                        fontFamily={'monospace'}
+                                        fontSize={'md'}
+                                        fontWeight={600}>
+                                        New task
+                                    </Text>
+                                </Flex>
+                                <Button
+                                    bg="white"
+                                    color={'black'}
+                                    _hover={{ bg: '' }}
+                                    _disabled={true}
+                                    w="20%"
+                                    fontFamily={'monospace'}
+                                    fontSize={'md'}
+                                    fontWeight={600}>
+                                    Done
+                                </Button>
+
+                            </HStack>
+                        </DrawerHeader>
+
+                        <DrawerBody>
+                            <VStack w="100%" h="100%" spacing={2}>
+                                <Box w="100%" h="13%">
+                                    <Input
+                                        w="100%" h="100%" placeholder='Title'
+                                        variant={'flushed'}
+                                        borderRadius={0}
+                                        borderTop={'none'}
+                                        borderLeft={'none'}
+                                        borderRight={'none'}
+                                    />
+                                </Box>
+
+                                <HStack
+                                    marginTop={'10px'}
+                                    w="100%" h="25%">
+                                    <FormControl w="20%">
+                                        <FormLabel fontSize={'15px'}>
+                                            Space
+                                        </FormLabel>
+                                        <Select w="100%%" size={'sm'}>
+                                            <option>option 1</option>
+                                            <option>option 2</option>
+                                            <option>option 3</option>
+                                        </Select>
+                                    </FormControl>
+
+                                    <FormControl w="60%" fontSize={'15px'}>
+                                        <FormLabel>
+                                            Folder
+                                        </FormLabel>
+                                        <Select w="100%%" size={'sm'}>
+                                            <option>option 1</option>
+                                            <option>option 2</option>
+                                            <option>option 3</option>
+                                        </Select>
+                                    </FormControl>
+
+                                    <FormControl w="20%" fontSize={'15px'}>
+                                        <FormLabel>
+                                            List
+                                        </FormLabel>
+                                        <Select w="100%%" size={'sm'}>
+                                            <option>option 1</option>
+                                            <option>option 2</option>
+                                            <option>option 3</option>
+                                        </Select>
+                                    </FormControl>
+                                </HStack>
+                            </VStack>
+                        </DrawerBody>
+
+                        <DrawerFooter>
+                            <Button variant='outline' mr={3} onClick={onClose}>
+                                Cancel
+                            </Button>
+                            <Button colorScheme='blue'>Save</Button>
+                        </DrawerFooter>
+                    </DrawerContent>
+                </Drawer>
 
             </VStack>
-                )
-            }
-            
+
+
         </Box>
     )
 }
