@@ -20,21 +20,27 @@ import {
     ModalFooter,
     ModalBody,
     ModalCloseButton,
-    Checkbox,
-    RadioGroup,
-    Radio,
+    IconButton,
+    Popover,
+    PopoverTrigger,
+    PopoverContent,
+    PopoverHeader,
+    PopoverBody,
+    PopoverFooter,
+    PopoverArrow,
+    PopoverCloseButton,
+    PopoverAnchor,
 } from '@chakra-ui/react'
 import ReactDOM from 'react-dom/client'
 import { BsTags } from 'react-icons/bs'
-
-
+import { AiFillEdit } from 'react-icons/ai'
 
 
 function Popup() {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const { isOpen: MOpen, onOpen: MOnOpen, onClose: MOnClose } = useDisclosure()
     const { isOpen: AOpen, onOpen: AOnOpen, onClose: AOnClose } = useDisclosure()
-    const { isOpen: WOpen, onOpen: WOnOpen, onClose: WOnClose } = useDisclosure()
+
     const btn2Ref = React.useRef()
 
 
@@ -52,8 +58,9 @@ function Popup() {
     const [AllTeams, SetTeams] = useState([])
 
     const [checkValue, setCheckValue] = useState('1')
-
+    const [currentTeam, setCurrentTeam] = useState('')
     const [showTag, setShowTag] = useState(false)
+    const [CurrentTeamAvatar, setCurrentTeamAvatar] = useState('')
 
 
     chrome.storage.sync.get('text', function (text) {
@@ -65,7 +72,19 @@ function Popup() {
     })
 
 
-    console.log(checkValue)
+    chrome.storage.sync.get('team', function (team_id) {
+        if (typeof (team_id) !== undefined) {
+            setCurrentTeam(team_id.team)
+
+            let av = AllTeams?.find(item => item.id === team_id.team)
+            setCurrentTeamAvatar(av?.avatar)
+        }
+        else {
+            setCurrentTeam("")
+        }
+    })
+
+
 
     useEffect(() => {
         if (typeof (Code) == undefined) {
@@ -143,6 +162,19 @@ function Popup() {
         }
     ]
 
+    const setCurrentTeamWithGoogle = (id) => {
+        if (id) {
+            chrome.storage.sync.set({ 'team': id })
+
+            let av = AllTeams?.find(item => item.id === id)
+            setCurrentTeamAvatar(av.avatar)
+        }
+    }
+
+
+
+
+
     return (AccessToken) ? (
         <Box w="400px" h="500px">
 
@@ -156,44 +188,60 @@ function Popup() {
                                     src='./clickup.png' alt="clickup" />
 
                                 <Stack direction='row' spacing={4} pr={3} py={2}>
+
                                     <Avatar
                                         ref={btn2Ref}
-                                        onClick={WOnOpen}
+                                        src={CurrentTeamAvatar}
                                         cursor={'pointer'} size={'sm'}>
-                                        <AvatarBadge boxSize='1.25em' bg='green.500' />
+                                        <AvatarBadge
+                                            boxSize='1.25em' bg='green.500' />
                                     </Avatar>
+                                    <Popover>
+                                        <PopoverTrigger>
+                                            <IconButton
+                                                color="white"
+                                                bg="rgb(159, 122, 234)"
+                                                size="sm" icon={<AiFillEdit />} />
+                                        </PopoverTrigger>
+                                        <PopoverContent w="max-content">
+                                            <PopoverArrow />
+                                            <PopoverCloseButton />
+                                            <PopoverHeader>Select team</PopoverHeader>
+                                            <PopoverBody>
+                                                <VStack w="100%" spacing={3}>
+                                                    {
+                                                        AllTeams?.map((item, i) => (
+                                                            <HStack spacing={3} key={i}>
+                                                                <Avatar
+                                                                    key={i}
+                                                                    src={item.avatar}
+                                                                    cursor={'pointer'} size={'sm'}>
+                                                                    <AvatarBadge boxSize='1.25em' bg='green.500' />
+                                                                </Avatar>
+                                                                <Button
+                                                                    bg="white"
+                                                                    size={'sm'}
+                                                                    onClick={() => setCurrentTeamWithGoogle(item.id)}
+                                                                    _hover={{ bg: 'purple.400', color: 'white' }}
+                                                                >
+                                                                    {item.name}
+                                                                </Button>
+                                                            </HStack>
+                                                        ))
+                                                    }
+
+                                                </VStack>
+                                            </PopoverBody>
+                                        </PopoverContent>
+                                    </Popover>
+
+
 
                                     {/* You can also change the borderColor and bg of the badge */}
 
                                 </Stack>
                             </HStack>
-                            <Drawer
-                                isOpen={WOpen}
-                                placement='right'
-                                onClose={WOnClose}
-                                finalFocusRef={btn2Ref}
-                            >
-                                <DrawerOverlay />
-                                <DrawerContent>
-                                    <DrawerCloseButton />
-                                    <DrawerHeader>Select team workspace</DrawerHeader>
 
-                                    <DrawerBody>
-
-                                        <VStack>
-                                          
-                                        </VStack>
-
-                                    </DrawerBody>
-
-                                    <DrawerFooter>
-                                        <Button variant='outline' mr={3} onClick={WOnClose}>
-                                            Cancel
-                                        </Button>
-                                        <Button colorScheme='blue'>Save</Button>
-                                    </DrawerFooter>
-                                </DrawerContent>
-                            </Drawer>
                         </Box>
 
                     </Flex>
