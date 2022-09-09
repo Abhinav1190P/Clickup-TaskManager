@@ -63,7 +63,7 @@ function Popup() {
     const [CurrentTeamAvatar, setCurrentTeamAvatar] = useState('')
     const [Spaces, SetSpaces] = useState([])
     const [Folders, SetFolders] = useState([])
-
+    const [Lists, SetLists] = useState([])
 
 
 
@@ -215,11 +215,21 @@ function Popup() {
                 })
                 const jdata = await data.json()
                 SetFolders(jdata.folders)
-
+           
             }
             GetMyFolders()
         }
     }, [currentSpace, currentSpace.length])
+
+    const GetMyLists = async () => {
+        if (currentFolder.length > 0) {
+            SetLists(Folders[0]?.lists)
+        }
+
+    }
+
+
+
 
 
 
@@ -451,15 +461,16 @@ function Popup() {
                                             }
                                         </Select>
                                     </FormControl>
-                                        
-                                       
+
+
                                     <FormControl w="30%" fontSize={'15px'}>
                                         <FormLabel>
                                             Folder
                                         </FormLabel>
                                         <Select
-                                        isDisabled={Folders && Folders.length > 0?false:true}
-                                        w="100%%" size={'sm'}>
+                                            onClick={(e) => { setCurrentFolder(e.target.value); GetMyLists() }}
+                                            isDisabled={Folders && Folders.length > 0 ? false : true}
+                                            w="100%%" size={'sm'}>
                                             {
                                                 Folders && Folders.length > 0 ? (
                                                     Folders?.map((item, i) => (
@@ -478,12 +489,25 @@ function Popup() {
 
                                     <FormControl w="30%" fontSize={'15px'}>
                                         <FormLabel>
-                                            List
+                                            Lists
                                         </FormLabel>
-                                        <Select w="100%%" size={'sm'}>
-                                            <option>option 1</option>
-                                            <option>option 2</option>
-                                            <option>option 3</option>
+                                        <Select
+                                            onClick={(e) => { setCurrentList(e.target.value) }}
+                                            isDisabled={Folders && Folders.length > 0 ? false : true}
+                                            w="100%%" size={'sm'}>
+                                            {
+                                                Lists && Lists.length  > 0 ? (
+                                                    Lists?.map((item, i) => (
+                                                        <option
+                                                            value={item.id}
+                                                            key={i}>
+                                                            {item.name}
+                                                        </option>
+                                                    ))
+                                                ) : (<option>
+                                                    No lists
+                                                </option>)
+                                            }
                                         </Select>
                                     </FormControl>
                                 </HStack>
