@@ -493,7 +493,7 @@ function Popup() {
                                         </FormLabel>
                                         <Select
                                             onClick={(e) => { setCurrentList(e.target.value) }}
-                                            isDisabled={Folders && Folders.length > 0 ? false : true}
+                                            isDisabled={Folders && Folders.length && currentFolder.length > 0 ? false : true}
                                             w="100%%" size={'sm'}>
                                             {
                                                 Lists && Lists.length  > 0 ? (
