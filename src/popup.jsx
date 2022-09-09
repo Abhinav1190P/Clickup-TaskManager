@@ -9,6 +9,9 @@ import {
     useDisclosure,
     DrawerContent,
     Select,
+    Stack,
+    Avatar,
+    AvatarBadge,
     DrawerCloseButton,
     Text, Divider, FormControl, Input, Heading, Button, FormLabel, Textarea, Icon, Modal,
     ModalOverlay,
@@ -17,6 +20,9 @@ import {
     ModalFooter,
     ModalBody,
     ModalCloseButton,
+    Checkbox,
+    RadioGroup,
+    Radio,
 } from '@chakra-ui/react'
 import ReactDOM from 'react-dom/client'
 import { BsTags } from 'react-icons/bs'
@@ -27,13 +33,25 @@ import { BsTags } from 'react-icons/bs'
 function Popup() {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const { isOpen: MOpen, onOpen: MOnOpen, onClose: MOnClose } = useDisclosure()
+    const { isOpen: AOpen, onOpen: AOnOpen, onClose: AOnClose } = useDisclosure()
+    const { isOpen: WOpen, onOpen: WOnOpen, onClose: WOnClose } = useDisclosure()
+    const btn2Ref = React.useRef()
+
+
     const btnRef = React.useRef()
+
+
 
     const [j, setJ] = useState('')
     const [Code, setCode] = useState('')
     const [AccessToken, setAccessToken] = useState('')
 
-    const [createTask, setCreateTask] = useState(false)
+    /* const [currentTag, SetCurrentTag] = useState('')
+    const [Tags, setTags] = useState([]) */
+
+    const [AllTeams, SetTeams] = useState([])
+
+    const [checkValue, setCheckValue] = useState('1')
 
     const [showTag, setShowTag] = useState(false)
 
@@ -47,7 +65,7 @@ function Popup() {
     })
 
 
-
+    console.log(checkValue)
 
     useEffect(() => {
         if (typeof (Code) == undefined) {
@@ -71,12 +89,31 @@ function Popup() {
 
     }, [Code])
 
+
     chrome.storage.sync.get('access_token', function (access_token) {
         if (access_token) {
             setAccessToken(access_token.access_token)
         }
     })
 
+
+    useEffect(() => {
+        if (AccessToken.length > 0) {
+            const GetMyteams = async () => {
+
+                const data = await fetch("https://api.clickup.com/api/v2/team", {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": AccessToken
+                    }
+                })
+                const jdata = await data.json()
+                SetTeams(jdata?.teams)
+            }
+            GetMyteams()
+        }
+    }, [AccessToken.length])
 
 
     const RecentDocs = [
@@ -106,20 +143,57 @@ function Popup() {
         }
     ]
 
-
     return (AccessToken) ? (
         <Box w="400px" h="500px">
 
             <VStack w="100%" h="100%">
                 <Box w="100%" h="10%">
                     <Flex w="100%" h="100%" alignItems={'center'} justifyContent={'flex-start'}>
-                        <Box w="50%" h="100%" >
-                            <HStack p={3} w="100%" h="100%">
+                        <Box w="100%" h="100%" >
+                            <HStack p={3} w="100%" h="100%" alignItems={'center'} justifyContent={'space-between'}>
                                 <Image
-                                    w="70%"
+                                    w="30%"
                                     src='./clickup.png' alt="clickup" />
-                            </HStack>
 
+                                <Stack direction='row' spacing={4} pr={3} py={2}>
+                                    <Avatar
+                                        ref={btn2Ref}
+                                        onClick={WOnOpen}
+                                        cursor={'pointer'} size={'sm'}>
+                                        <AvatarBadge boxSize='1.25em' bg='green.500' />
+                                    </Avatar>
+
+                                    {/* You can also change the borderColor and bg of the badge */}
+
+                                </Stack>
+                            </HStack>
+                            <Drawer
+                                isOpen={WOpen}
+                                placement='right'
+                                onClose={WOnClose}
+                                finalFocusRef={btn2Ref}
+                            >
+                                <DrawerOverlay />
+                                <DrawerContent>
+                                    <DrawerCloseButton />
+                                    <DrawerHeader>Select team workspace</DrawerHeader>
+
+                                    <DrawerBody>
+
+                                        <VStack>
+                                          
+                                        </VStack>
+
+                                    </DrawerBody>
+
+                                    <DrawerFooter>
+                                        <Button variant='outline' mr={3} onClick={WOnClose}>
+                                            Cancel
+                                        </Button>
+                                        <Button colorScheme='blue'>Save</Button>
+                                    </DrawerFooter>
+                                </DrawerContent>
+                            </Drawer>
                         </Box>
 
                     </Flex>
@@ -136,6 +210,7 @@ function Popup() {
                                 py={3}
                                 fontSize={'lg'} fontWeight={700} fontFamily={'monospace'}>
                                 Recent Tasks
+
                             </Text>
 
                             <Flex w="40%" h="100%" alignItems={'center'} justifyContent={'center'}>
@@ -180,6 +255,7 @@ function Popup() {
                                 ))
                             }
                         </VStack>
+
                     </VStack>
 
                 </Box>
@@ -291,42 +367,125 @@ function Popup() {
                                     </FormControl>
                                 </HStack>
 
-                                <Box w="100%" h="25%">
+                                <Box w="100%" h="45%">
                                     <Textarea
                                         h="100%"
                                         placeholder='Task description' />
                                 </Box>
 
-                                <Box w="100%" h="5%" px={2}
+                                <HStack
+                                    alignItems={'flex-start'}
+                                    spacing={3}
+                                    w="100%" h="5%" px={2}
                                     cursor={'pointer'}>
-                                    <Icon
-                                        onClick={() => {setShowTag(!showTag);MOnOpen()}}
-                                        borderRadius={'5'}
-                                        as={BsTags} size={'sm'} />
-                                </Box>
+                                    <HStack h="100%">
+                                        <Icon
+                                            onClick={() => { setShowTag(!showTag); MOnOpen() }}
+                                            borderRadius={'5'}
+                                            as={BsTags} size={'sm'} />
+                                        <Text
+                                            cursor={'pointer'}
+                                            onClick={() => { setShowTag(!showTag); MOnOpen() }}
+                                        >
+                                            Add tags
+                                        </Text>
+                                    </HStack>
+
+
+                                    <HStack h="100%">
+                                        <Icon
+                                            onClick={() => { setShowTag(!showTag); MOnOpen() }}
+                                            borderRadius={'5'}
+                                            as={BsTags} size={'sm'} />
+                                        <Text
+                                            cursor={'pointer'}
+                                            onClick={() => { AOnOpen() }}
+                                        >
+                                            Assign
+                                        </Text>
+                                    </HStack>
+                                    <HStack>
+
+                                    </HStack>
+
+                                </HStack>
 
                             </VStack>
-                           
+
 
                         </DrawerBody>
 
                         <Modal isOpen={MOpen} onClose={MOnClose}>
-                                <ModalOverlay />
-                                <ModalContent  w="300px">
-                                    <ModalHeader>Modal Title</ModalHeader>
-                                    <ModalCloseButton />
-                                    <ModalBody>
-                                            JEy
-                                    </ModalBody>
+                            <ModalOverlay />
+                            <ModalContent w="300px">
+                                <ModalHeader>Tag name</ModalHeader>
+                                <ModalCloseButton />
+                                <ModalBody>
+                                    <Input placeholder='One tag per line' />
+                                </ModalBody>
 
-                                    <ModalFooter>
-                                        <Button colorScheme='blue' mr={3} onClick={MOnClose}>
-                                            Close
+                                <ModalFooter w="100%">
+                                    <HStack w="100%" alignItems={'flex-start'} justifyContent={'space-between'}>
+                                        <Button
+                                            bg="white"
+                                            color={'red.400'}
+                                            _hover={{ bg: '' }}
+                                            w="40%"
+                                            onClick={() => { MOnClose() }}
+                                            fontFamily={'monospace'}
+                                            fontSize={'md'}
+                                            fontWeight={600}>
+                                            Cancel
                                         </Button>
-                                        <Button variant='ghost'>Secondary Action</Button>
-                                    </ModalFooter>
-                                </ModalContent>
-                            </Modal>
+                                        <Button
+                                            bg="white"
+                                            _hover={{ bg: '' }}
+                                            w="40%"
+                                            fontFamily={'monospace'}
+                                            fontSize={'md'}
+                                            fontWeight={600}>
+                                            Add
+                                        </Button>
+                                    </HStack>
+                                </ModalFooter>
+                            </ModalContent>
+                        </Modal>
+
+                        <Modal isOpen={AOpen} onClose={AOnClose}>
+                            <ModalOverlay />
+                            <ModalContent w="300px">
+                                <ModalHeader>Assign task</ModalHeader>
+                                <ModalCloseButton />
+                                <ModalBody>
+                                    <Input placeholder='Add user' />
+                                </ModalBody>
+
+                                <ModalFooter w="100%">
+                                    <HStack w="100%" alignItems={'flex-start'} justifyContent={'space-between'}>
+                                        <Button
+                                            bg="white"
+                                            color={'red.400'}
+                                            _hover={{ bg: '' }}
+                                            w="40%"
+                                            onClick={() => { AOnClose() }}
+                                            fontFamily={'monospace'}
+                                            fontSize={'md'}
+                                            fontWeight={600}>
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            bg="white"
+                                            _hover={{ bg: '' }}
+                                            w="40%"
+                                            fontFamily={'monospace'}
+                                            fontSize={'md'}
+                                            fontWeight={600}>
+                                            Add
+                                        </Button>
+                                    </HStack>
+                                </ModalFooter>
+                            </ModalContent>
+                        </Modal>
                         <DrawerFooter>
                             <Button variant='outline' mr={3} onClick={onClose}>
                                 Cancel
