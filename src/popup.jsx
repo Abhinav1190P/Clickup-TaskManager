@@ -61,6 +61,16 @@ function Popup() {
     const [currentTeam, setCurrentTeam] = useState('')
     const [showTag, setShowTag] = useState(false)
     const [CurrentTeamAvatar, setCurrentTeamAvatar] = useState('')
+    const [Spaces, SetSpaces] = useState([])
+    const [Folders, SetFolders] = useState([])
+
+
+
+
+    const [currentSpace, setCurrentSpace] = useState('')
+    const [currentFolder, setCurrentFolder] = useState('')
+    const [currentList, setCurrentList] = useState('')
+
 
 
     chrome.storage.sync.get('text', function (text) {
@@ -172,6 +182,44 @@ function Popup() {
     }
 
 
+
+    const GetMySpaces = async () => {
+        if (currentTeam.length > 0) {
+            const data = await fetch(`https://api.clickup.com/api/v2/team/${currentTeam}/space`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": AccessToken
+                }
+            })
+            const jdata = await data.json()
+            SetSpaces(jdata.spaces)
+        }
+
+    }
+
+
+
+
+
+    useEffect(() => {
+        if (currentSpace.length > 0) {
+            const GetMyFolders = async () => {
+
+                const data = await fetch(`https://api.clickup.com/api/v2/space/${currentSpace}/folder`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": AccessToken
+                    }
+                })
+                const jdata = await data.json()
+                SetFolders(jdata.folders)
+
+            }
+            GetMyFolders()
+        }
+    }, [currentSpace, currentSpace.length])
 
 
 
@@ -314,7 +362,7 @@ function Popup() {
                             boxShadow={'xl'}
                             color={'white'}
                             bg={"rgb(159, 122, 234)"}
-                            onClick={onOpen}
+                            onClick={() => { onOpen(); GetMySpaces() }}
                         >
                             + Create a task
                         </Button>
@@ -385,21 +433,46 @@ function Popup() {
                                         <FormLabel fontSize={'15px'}>
                                             Space
                                         </FormLabel>
-                                        <Select w="100%%" size={'sm'}>
-                                            <option>option 1</option>
-                                            <option>option 2</option>
-                                            <option>option 3</option>
+                                        <Select
+                                            onChange={(e) => { setCurrentSpace(e.target.value) }}
+                                            w="100%%" size={'sm'}>
+                                            {
+                                                Spaces ? (
+                                                    Spaces?.map((item, i) => (
+                                                        <option
+                                                            value={item.id}
+                                                            key={i}>
+                                                            {item.name}
+                                                        </option>
+                                                    ))
+                                                ) : (<option>
+                                                    Err
+                                                </option>)
+                                            }
                                         </Select>
                                     </FormControl>
-
+                                        
+                                       
                                     <FormControl w="30%" fontSize={'15px'}>
                                         <FormLabel>
                                             Folder
                                         </FormLabel>
-                                        <Select w="100%%" size={'sm'}>
-                                            <option>option 1</option>
-                                            <option>option 2</option>
-                                            <option>option 3</option>
+                                        <Select
+                                        isDisabled={Folders && Folders.length > 0?false:true}
+                                        w="100%%" size={'sm'}>
+                                            {
+                                                Folders && Folders.length > 0 ? (
+                                                    Folders?.map((item, i) => (
+                                                        <option
+                                                            value={item.id}
+                                                            key={i}>
+                                                            {item.name}
+                                                        </option>
+                                                    ))
+                                                ) : (<option>
+                                                    No folders
+                                                </option>)
+                                            }
                                         </Select>
                                     </FormControl>
 
