@@ -33,6 +33,7 @@ import {
     AccordionItem,
     AccordionButton,
     AccordionPanel,
+    DrawerCloseButton,
     AccordionIcon,
     Tag,
     Link,
@@ -43,16 +44,19 @@ import { BsTags } from 'react-icons/bs'
 import { AiFillEdit } from 'react-icons/ai'
 import { RiFoldersLine } from 'react-icons/ri'
 import { AiOutlineUnorderedList } from 'react-icons/ai'
-
+import { BiTimeFive } from 'react-icons/bi'
 function Popup() {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const { isOpen: MOpen, onOpen: MOnOpen, onClose: MOnClose } = useDisclosure()
     const { isOpen: AOpen, onOpen: AOnOpen, onClose: AOnClose } = useDisclosure()
 
+    const { isOpen: LisOpen, onOpen: LOnOpen, onClose: LOnClose } = useDisclosure()
+    const btnRef = React.useRef()
+
     const btn2Ref = React.useRef()
 
 
-    const btnRef = React.useRef()
+    const btn3Ref = React.useRef()
 
 
 
@@ -76,7 +80,7 @@ function Popup() {
     const [Spaces, SetSpaces] = useState([])
     const [Folders, SetFolders] = useState([])
     const [Lists, SetLists] = useState([])
-
+    const [Tasks, SetTasks] = useState([])
 
 
     const [currentSpace, setCurrentSpace] = useState('')
@@ -159,32 +163,7 @@ function Popup() {
     }, [AccessToken, AccessToken.length])
 
 
-    const RecentDocs = [
-        {
-            document_name: "I like movies",
-            located_in: "Everything",
-            tags: "3",
-            last_updated: "04-09-2022"
-        },
-        {
-            document_name: "Coimbatore",
-            located_in: "Everything",
-            tags: "2",
-            last_updated: "04-09-2022"
-        },
-        {
-            document_name: "C++ problems",
-            located_in: "Everything",
-            tags: "1",
-            last_updated: "04-09-2022"
-        },
-        {
-            document_name: "C++ problems",
-            located_in: "Everything",
-            tags: "1",
-            last_updated: "04-09-2022"
-        }
-    ]
+
 
     const setCurrentTeamWithGoogle = (id) => {
         if (id) {
@@ -278,8 +257,29 @@ function Popup() {
             body: JSON.stringify(obj)
         })
         const jdata = await data.json()
-        alert(JSON.stringify(jdata))
+
     }
+
+
+    useEffect(() => {
+        if (currentList.length > 0) {
+            const GetMyTasks = async () => {
+                const data = await fetch(`https://api.clickup.com/api/v2/list/${currentList}/task`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": AccessToken
+                    }
+                })
+                const jdata = await data.json()
+                SetTasks(jdata.tasks)
+
+            }
+            GetMyTasks()
+        }
+    }, [currentList, currentList.length])
+
+ 
 
     return (AccessToken) ? (
         <Box w="400px" h="500px">
@@ -415,46 +415,117 @@ function Popup() {
                                                 {
                                                     Folders && Folders.length > 0 ? (
                                                         Folders?.map((item, i) => (
-                                                            <VStack py={3} alignItems={'flex-start'} key={i} px={3}>
+                                                            <Box>
 
-                                                                <Link
-                                                                    color={'purple.400'}
-                                                                    fontWeight={700} fontSize={'lg'}>
-                                                                    {"*"} {item.name}
-                                                                </Link>
-                                                                <Text fontWeight={700}>
-                                                                    <Icon as={AiOutlineUnorderedList} /> Lists:
-                                                                </Text>
-                                                                {
-                                                                    item.lists && item.lists.length > 0 ? (
-                                                                        item.lists?.map((item2, i) => (
-                                                                            <Box w="100%" key={i}>
-                                                                                <Link
-                                                                                    color={'purple.400'}
-                                                                                    px={3}
-                                                                                    fontWeight={700} fontSize={'sm'}>
-                                                                                    {"*"} {item2.name}
-                                                                                </Link>
+                                                                <VStack py={3} alignItems={'flex-start'} key={i} px={3}>
 
-                                                                            </Box>
-                                                                        ))
-                                                                    ) : (<Box>
-                                                                        No lists
-                                                                    </Box>)
+                                                                    <Link
+                                                                        color={'purple.400'}
+                                                                        fontWeight={700} fontSize={'lg'}>
+                                                                        + {item.name}
+                                                                    </Link>
+                                                                    <Text fontWeight={700}>
+                                                                        <Icon as={AiOutlineUnorderedList} /> Lists:
+                                                                    </Text>
+                                                                    {
+                                                                        item.lists && item.lists.length > 0 ? (
+                                                                            item.lists?.map((item2, i) => (
+                                                                                <Box w="100%" key={i}>
 
-                                                                }
-                                                                <Divider w="100%" />
-                                                            </VStack>
+                                                                                    <Link
+                                                                                        ref={btn3Ref}
+                                                                                        onClick={() => { setCurrentList(item2.id); LOnOpen() }}
+                                                                                        color={'purple.400'}
+                                                                                        px={3}
+                                                                                        fontWeight={700} fontSize={'sm'}>
+                                                                                        {"*"} {item2.name}
+                                                                                    </Link>
+
+                                                                                </Box>
+                                                                            ))
+                                                                        ) : (<Box>
+                                                                            No lists
+                                                                        </Box>)
+
+
+                                                                    }
+
+                                                                </VStack>
+
+                                                            </Box>
                                                         ))
                                                     ) : (<Box>
                                                         No folders</Box>)
-
-
                                                 }
+
+
                                             </AccordionPanel>
                                         </AccordionItem>
                                     ))
+
                                 }
+                                <Divider w="100%" />
+                                <Drawer
+
+                                    isOpen={LisOpen}
+                                    placement='bottom'
+                                    onClose={onClose}
+                                    finalFocusRef={btn3Ref}
+                                >
+                                    <DrawerOverlay opacity={.8} />
+                                    <DrawerContent h="500px">
+                                        <DrawerCloseButton />
+                                        <DrawerHeader color={'purple.400'}
+                                            px={3}
+                                            fontWeight={700} fontSize={'sm'}>Tasks</DrawerHeader>
+
+                                        <DrawerBody>
+                                            <VStack
+                                                py={3}
+                                                w="100%" maxH="100%" overflow={'scroll'}>
+                                                {
+                                                    Tasks && Tasks.length > 0 ? (
+                                                        Tasks?.map((item, i) => (
+                                                            <HStack
+
+                                                                w="95%"
+                                                                minH="15vh"
+                                                                cursor={'pointer'}
+                                                                borderRadius={3}
+                                                                transitionDelay={'100ms'}
+                                                                transitionDuration={'500ms'}
+                                                                _hover={{ boxShadow: 'lg', shadow: '1px 1px 5px 3px rgba(159, 122, 234, 0.6)' }}
+                                                                boxShadow={'lg'}
+                                                                key={i}>
+                                                                <VStack px={3} py={2} alignItems={'flex-start'} w="50%" h="100%">
+                                                                    <Heading size={'sm'} fontWeight={700} fontFamily={'monospace'} color={'purple.400'}>
+                                                                        {item.name}
+                                                                    </Heading>
+                                                                    <HStack>
+                                                                        <Icon as={BiTimeFive} />
+                                                                        <Text
+                                                                            fontSize={'10px'}
+                                                                            fontWeight={700}>
+                                                                            
+                                                                        </Text>
+                                                                    </HStack>
+
+                                                                </VStack>
+                                                            </HStack>
+                                                        ))
+                                                    ) : (<Box>No tasks</Box>)
+                                                }
+                                            </VStack>
+                                        </DrawerBody>
+
+                                        <DrawerFooter>
+                                            <Button variant='outline' mr={3} onClick={LOnClose}>
+                                                Cancel
+                                            </Button>
+                                            <Button colorScheme='blue'>Save</Button>
+                                        </DrawerFooter>
+                                    </DrawerContent>
+                                </Drawer>
                             </Accordion>
                         </VStack>
 
