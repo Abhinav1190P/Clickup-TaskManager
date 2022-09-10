@@ -52,12 +52,16 @@ function Popup() {
     const [Code, setCode] = useState('')
     const [AccessToken, setAccessToken] = useState('')
 
-    /* const [currentTag, SetCurrentTag] = useState('')
-    const [Tags, setTags] = useState([]) */
+    const [currentTag, SetCurrentTag] = useState('')
+    const [Tags, setTags] = useState([])
+
+    const [currentAssigned, SetCurrentAssigned] = useState('')
+    const [Assigned, SetAssigned] = useState([])
+
 
     const [AllTeams, SetTeams] = useState([])
 
-    const [checkValue, setCheckValue] = useState('1')
+
     const [currentTeam, setCurrentTeam] = useState('')
     const [showTag, setShowTag] = useState(false)
     const [CurrentTeamAvatar, setCurrentTeamAvatar] = useState('')
@@ -70,7 +74,8 @@ function Popup() {
     const [currentSpace, setCurrentSpace] = useState('')
     const [currentFolder, setCurrentFolder] = useState('')
     const [currentList, setCurrentList] = useState('')
-
+    const [description, setDescription] = useState('')
+    const [title, setTitle] = useState('')
 
 
     chrome.storage.sync.get('text', function (text) {
@@ -214,8 +219,7 @@ function Popup() {
                     }
                 })
                 const jdata = await data.json()
-                SetFolders(jdata.folders)
-           
+                SetFolders(jdata.folders)   
             }
             GetMyFolders()
         }
@@ -229,9 +233,38 @@ function Popup() {
     }
 
 
+    const AddNewTag = () => {
+        let clone = [...Tags]
+        clone.push(currentTag)
+        setTags(clone)
+    }
 
+    const AddNewAssignee = () => {
+        let clone = [...Assigned]
+        clone.push(currentAssigned)
+        SetAssigned(clone)
+    }
 
-
+    const SendData = async (e) => {
+        e.preventDefault()
+        let obj = {
+            name: title,
+            description: description,
+            assignees: Assigned,
+            tags: Tags,
+        }
+        
+        const data = await fetch(`https://api.clickup.com/api/v2/list/${currentList}/task`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": AccessToken
+                    },
+                    body:JSON.stringify(obj)
+                })
+                const jdata = await data.json()
+                alert(JSON.stringify(jdata))
+    }
 
     return (AccessToken) ? (
         <Box w="400px" h="500px">
@@ -427,6 +460,8 @@ function Popup() {
                                 <Box w="100%" h="13%">
                                     <Input
                                         w="100%" h="100%" placeholder='Title'
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
                                         variant={'flushed'}
                                         borderRadius={0}
                                         borderTop={'none'}
@@ -496,7 +531,7 @@ function Popup() {
                                             isDisabled={Folders && Folders.length && currentFolder.length > 0 ? false : true}
                                             w="100%%" size={'sm'}>
                                             {
-                                                Lists && Lists.length  > 0 ? (
+                                                Lists && Lists.length > 0 ? (
                                                     Lists?.map((item, i) => (
                                                         <option
                                                             value={item.id}
@@ -514,6 +549,8 @@ function Popup() {
 
                                 <Box w="100%" h="45%">
                                     <Textarea
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
                                         h="100%"
                                         placeholder='Task description' />
                                 </Box>
@@ -523,37 +560,66 @@ function Popup() {
                                     spacing={3}
                                     w="100%" h="5%" px={2}
                                     cursor={'pointer'}>
-                                    <HStack h="100%">
-                                        <Icon
-                                            onClick={() => { setShowTag(!showTag); MOnOpen() }}
-                                            borderRadius={'5'}
-                                            as={BsTags} size={'sm'} />
-                                        <Text
-                                            cursor={'pointer'}
-                                            onClick={() => { setShowTag(!showTag); MOnOpen() }}
-                                        >
-                                            Add tags
-                                        </Text>
-                                    </HStack>
+                                    {
+                                        Tags.length > 0 ? (
+                                            <HStack h="100%">
+                                                <Text
+                                                    cursor={'pointer'}
+                                                    onClick={() => { setShowTag(!showTag); MOnOpen() }}
+                                                >
+                                                    {Tags.length == 1 ? (1 + " Tag") : ("+ " + (Tags.length - 1) + " Tags")}
+                                                </Text>
+                                            </HStack>) : (
+                                            <HStack h="100%">
+                                                <Icon
+                                                    onClick={() => { setShowTag(!showTag); MOnOpen() }}
+                                                    borderRadius={'5'}
+                                                    as={BsTags} size={'sm'} />
+                                                <Text
+                                                    cursor={'pointer'}
+                                                    onClick={() => { setShowTag(!showTag); MOnOpen() }}
+                                                >
+                                                    Add tags
+                                                </Text>
+                                            </HStack>
+                                        )
+                                    }
 
 
-                                    <HStack h="100%">
-                                        <Icon
-                                            onClick={() => { setShowTag(!showTag); MOnOpen() }}
-                                            borderRadius={'5'}
-                                            as={BsTags} size={'sm'} />
-                                        <Text
-                                            cursor={'pointer'}
-                                            onClick={() => { AOnOpen() }}
-                                        >
-                                            Assign
-                                        </Text>
-                                    </HStack>
+                                    {
+                                        Assigned.length > 0 ? (
+                                            <HStack h="100%">
+                                                <Text
+                                                    cursor={'pointer'}
+                                                    onClick={() => { setShowTag(!showTag); MOnOpen() }}
+                                                >
+                                                    {Assigned.length == 1 ? (1 + " Assignee") : ("+ " + (Assigned.length - 1) + " Assignees")}
+                                                </Text>
+                                            </HStack>
+                                        ) : (
+                                            <HStack h="100%">
+                                                <Icon
+                                                    onClick={() => { setShowTag(!showTag); MOnOpen() }}
+                                                    borderRadius={'5'}
+                                                    as={BsTags} size={'sm'} />
+                                                <Text
+                                                    cursor={'pointer'}
+                                                    onClick={() => { AOnOpen() }}
+                                                >
+                                                    Assign
+                                                </Text>
+                                            </HStack>
+                                        )
+                                    }
+
                                     <HStack>
 
                                     </HStack>
 
                                 </HStack>
+
+
+
 
                             </VStack>
 
@@ -566,7 +632,10 @@ function Popup() {
                                 <ModalHeader>Tag name</ModalHeader>
                                 <ModalCloseButton />
                                 <ModalBody>
-                                    <Input placeholder='One tag per line' />
+                                    <Input
+                                        value={currentTag}
+                                        onChange={(e) => SetCurrentTag(e.target.value)}
+                                        placeholder='One tag per line' />
                                 </ModalBody>
 
                                 <ModalFooter w="100%">
@@ -588,6 +657,10 @@ function Popup() {
                                             w="40%"
                                             fontFamily={'monospace'}
                                             fontSize={'md'}
+                                            onClick={(e) => {
+                                                MOnClose();
+                                                AddNewTag(); SetCurrentTag('')
+                                            }}
                                             fontWeight={600}>
                                             Add
                                         </Button>
@@ -602,7 +675,10 @@ function Popup() {
                                 <ModalHeader>Assign task</ModalHeader>
                                 <ModalCloseButton />
                                 <ModalBody>
-                                    <Input placeholder='Add user' />
+                                    <Input
+                                        value={currentAssigned}
+                                        onChange={(e) => SetCurrentAssigned(e.target.value)}
+                                        placeholder='Add user' />
                                 </ModalBody>
 
                                 <ModalFooter w="100%">
@@ -612,7 +688,7 @@ function Popup() {
                                             color={'red.400'}
                                             _hover={{ bg: '' }}
                                             w="40%"
-                                            onClick={() => { AOnClose() }}
+                                            onClick={() => { AOnClose(); }}
                                             fontFamily={'monospace'}
                                             fontSize={'md'}
                                             fontWeight={600}>
@@ -622,6 +698,10 @@ function Popup() {
                                             bg="white"
                                             _hover={{ bg: '' }}
                                             w="40%"
+                                            onClick={(e) => {
+                                                AOnClose();
+                                                AddNewAssignee(); SetCurrentAssigned('')
+                                            }}
                                             fontFamily={'monospace'}
                                             fontSize={'md'}
                                             fontWeight={600}>
@@ -635,7 +715,10 @@ function Popup() {
                             <Button variant='outline' mr={3} onClick={onClose}>
                                 Cancel
                             </Button>
-                            <Button colorScheme='blue'>Save</Button>
+                            <Button
+                            type="submit"
+                                onClick={(e) => SendData(e)}
+                                colorScheme='blue'>Save</Button>
                         </DrawerFooter>
                     </DrawerContent>
                 </Drawer>
