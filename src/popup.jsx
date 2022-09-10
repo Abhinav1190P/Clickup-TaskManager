@@ -12,8 +12,7 @@ import {
     Stack,
     Avatar,
     AvatarBadge,
-    DrawerCloseButton,
-    Text, Divider, FormControl, Input, Heading, Button, FormLabel, Textarea, Icon, Modal,
+    Text, FormControl, Input, Heading, Button, FormLabel, Textarea, Icon, Modal,
     ModalOverlay,
     ModalContent,
     ModalHeader,
@@ -30,11 +29,20 @@ import {
     PopoverArrow,
     PopoverCloseButton,
     PopoverAnchor,
+    Accordion,
+    AccordionItem,
+    AccordionButton,
+    AccordionPanel,
+    AccordionIcon,
+    Tag,
+    Link,
+    Divider,
 } from '@chakra-ui/react'
 import ReactDOM from 'react-dom/client'
 import { BsTags } from 'react-icons/bs'
 import { AiFillEdit } from 'react-icons/ai'
-
+import { RiFoldersLine } from 'react-icons/ri'
+import { AiOutlineUnorderedList } from 'react-icons/ai'
 
 function Popup() {
     const { isOpen, onOpen, onClose } = useDisclosure()
@@ -143,11 +151,12 @@ function Popup() {
                     }
                 })
                 const jdata = await data.json()
-                SetTeams(jdata?.teams)
+                SetTeams(jdata.teams)
+
             }
             GetMyteams()
         }
-    }, [AccessToken.length])
+    }, [AccessToken, AccessToken.length])
 
 
     const RecentDocs = [
@@ -188,20 +197,26 @@ function Popup() {
 
 
 
-    const GetMySpaces = async () => {
-        if (currentTeam.length > 0) {
-            const data = await fetch(`https://api.clickup.com/api/v2/team/${currentTeam}/space`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    "Authorization": AccessToken
-                }
-            })
-            const jdata = await data.json()
-            SetSpaces(jdata.spaces)
-        }
 
-    }
+
+    useEffect(() => {
+        const GetMySpaces = async () => {
+            if (currentTeam.length > 0) {
+                const data = await fetch(`https://api.clickup.com/api/v2/team/${currentTeam}/space`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": AccessToken
+                    }
+                })
+                const jdata = await data.json()
+                SetSpaces(jdata.spaces)
+            }
+
+        }
+        GetMySpaces()
+    }, [currentTeam.length])
+
 
 
 
@@ -219,7 +234,7 @@ function Popup() {
                     }
                 })
                 const jdata = await data.json()
-                SetFolders(jdata.folders)   
+                SetFolders(jdata.folders)
             }
             GetMyFolders()
         }
@@ -253,17 +268,17 @@ function Popup() {
             assignees: Assigned,
             tags: Tags,
         }
-        
+
         const data = await fetch(`https://api.clickup.com/api/v2/list/${currentList}/task`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        "Authorization": AccessToken
-                    },
-                    body:JSON.stringify(obj)
-                })
-                const jdata = await data.json()
-                alert(JSON.stringify(jdata))
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                "Authorization": AccessToken
+            },
+            body: JSON.stringify(obj)
+        })
+        const jdata = await data.json()
+        alert(JSON.stringify(jdata))
     }
 
     return (AccessToken) ? (
@@ -348,7 +363,7 @@ function Popup() {
                                 px={3}
                                 py={3}
                                 fontSize={'lg'} fontWeight={700} fontFamily={'monospace'}>
-                                Recent Tasks
+                                Manage tasks
 
                             </Text>
 
@@ -363,36 +378,84 @@ function Popup() {
                         </HStack>
 
                         <VStack py={2} w="100%" h="75%" overflowY={'scroll'} overflowX={'hidden'}>
-                            {
-                                RecentDocs?.map((item, i) => (
-                                    <Box w="90%" minH="15vh" key={i}>
 
-                                        <HStack
-                                            cursor={'pointer'}
-                                            borderRadius={3}
-                                            transitionDelay={'100ms'}
-                                            transitionDuration={'500ms'}
-                                            _hover={{ boxShadow: 'lg', shadow: '1px 1px 5px 3px rgba(159, 122, 234, 0.6)' }}
-                                            boxShadow={'lg'}
-                                            w="100%" h="100%">
-                                            <Box w="50%" h="100%">
-                                                <VStack p={3} spacing={0} w="100%" h="100%" alignItems={'flex-start'} justifyContent={"flex-start"}>
-                                                    <Heading fontSize={'2xl'}
-                                                        fontWeight={700}
-                                                        color={'rgb(159, 122, 234)'}
-                                                        fontFamily={'monospace'}
-                                                    >
-                                                        Task name
-                                                    </Heading>
-                                                    <Text fontWeight={700} fontFamily={'monospace'}>
-                                                        Task description
-                                                    </Text>
-                                                </VStack>
-                                            </Box>
-                                        </HStack>
-                                    </Box>
-                                ))
-                            }
+
+                            <Accordion
+                                allowToggle={true}
+                                w="100%">
+
+                                {
+                                    Spaces?.map((item, i) => (
+                                        <AccordionItem
+
+                                            onClick={() => { setCurrentSpace(item.id) }}
+                                            w="100%" minH="15vh" key={i}>
+                                            <h2>
+                                                <AccordionButton>
+                                                    <Box flex='1' textAlign='left'>
+                                                        <VStack
+                                                            alignItems={'flex-start'}
+                                                            w="100%" h="100%">
+                                                            <Heading size={'lg'} fontWeight={700} color={'purple.400'} fontFamily={'monospace'}>
+                                                                {item.name}
+                                                            </Heading>
+                                                            <Text fontWeight={600} fontSize={'sm'}>
+                                                                {item.id}
+                                                            </Text>
+                                                        </VStack>
+
+                                                    </Box>
+                                                    <AccordionIcon />
+                                                </AccordionButton>
+                                            </h2>
+                                            <AccordionPanel pb={4}>
+                                                <Text fontWeight={700}>
+                                                    <Icon as={RiFoldersLine} /> Folders:
+                                                </Text>
+                                                {
+                                                    Folders && Folders.length > 0 ? (
+                                                        Folders?.map((item, i) => (
+                                                            <VStack py={3} alignItems={'flex-start'} key={i} px={3}>
+
+                                                                <Link
+                                                                    color={'purple.400'}
+                                                                    fontWeight={700} fontSize={'lg'}>
+                                                                    {"*"} {item.name}
+                                                                </Link>
+                                                                <Text fontWeight={700}>
+                                                                    <Icon as={AiOutlineUnorderedList} /> Lists:
+                                                                </Text>
+                                                                {
+                                                                    item.lists && item.lists.length > 0 ? (
+                                                                        item.lists?.map((item2, i) => (
+                                                                            <Box w="100%" key={i}>
+                                                                                <Link
+                                                                                    color={'purple.400'}
+                                                                                    px={3}
+                                                                                    fontWeight={700} fontSize={'sm'}>
+                                                                                    {"*"} {item2.name}
+                                                                                </Link>
+
+                                                                            </Box>
+                                                                        ))
+                                                                    ) : (<Box>
+                                                                        No lists
+                                                                    </Box>)
+
+                                                                }
+                                                                <Divider w="100%" />
+                                                            </VStack>
+                                                        ))
+                                                    ) : (<Box>
+                                                        No folders</Box>)
+
+
+                                                }
+                                            </AccordionPanel>
+                                        </AccordionItem>
+                                    ))
+                                }
+                            </Accordion>
                         </VStack>
 
                     </VStack>
@@ -716,7 +779,7 @@ function Popup() {
                                 Cancel
                             </Button>
                             <Button
-                            type="submit"
+                                type="submit"
                                 onClick={(e) => SendData(e)}
                                 colorScheme='blue'>Save</Button>
                         </DrawerFooter>
