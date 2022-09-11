@@ -44,18 +44,15 @@ import { BsTags } from 'react-icons/bs'
 import { AiFillEdit } from 'react-icons/ai'
 import { RiFoldersLine } from 'react-icons/ri'
 import { AiOutlineUnorderedList } from 'react-icons/ai'
-import { BiTimeFive } from 'react-icons/bi'
+import { ImCancelCircle } from 'react-icons/im'
 function Popup() {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const { isOpen: MOpen, onOpen: MOnOpen, onClose: MOnClose } = useDisclosure()
     const { isOpen: AOpen, onOpen: AOnOpen, onClose: AOnClose } = useDisclosure()
-
     const { isOpen: LisOpen, onOpen: LOnOpen, onClose: LOnClose } = useDisclosure()
+
     const btnRef = React.useRef()
-
     const btn2Ref = React.useRef()
-
-
     const btn3Ref = React.useRef()
 
 
@@ -81,7 +78,7 @@ function Popup() {
     const [Folders, SetFolders] = useState([])
     const [Lists, SetLists] = useState([])
     const [Tasks, SetTasks] = useState([])
-
+    const [OneTask, SetOneTask] = useState({})
 
     const [currentSpace, setCurrentSpace] = useState('')
     const [currentFolder, setCurrentFolder] = useState('')
@@ -201,6 +198,7 @@ function Popup() {
 
 
 
+
     useEffect(() => {
         if (currentSpace.length > 0) {
             const GetMyFolders = async () => {
@@ -279,7 +277,19 @@ function Popup() {
         }
     }, [currentList, currentList.length])
 
- 
+    const GetATask = async (id) => {
+        const data = await fetch(`https://api.clickup.com/api/v2/task/${id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                "Authorization": AccessToken
+            }
+        })
+        const jdata = await data.json()
+        SetOneTask(jdata)
+
+
+    }
 
     return (AccessToken) ? (
         <Box w="400px" h="500px">
@@ -483,38 +493,113 @@ function Popup() {
                                             <VStack
                                                 py={3}
                                                 w="100%" maxH="100%" overflow={'scroll'}>
-                                                {
-                                                    Tasks && Tasks.length > 0 ? (
-                                                        Tasks?.map((item, i) => (
-                                                            <HStack
+                                                <Accordion w="95%">
 
-                                                                w="95%"
-                                                                minH="15vh"
-                                                                cursor={'pointer'}
-                                                                borderRadius={3}
-                                                                transitionDelay={'100ms'}
-                                                                transitionDuration={'500ms'}
-                                                                _hover={{ boxShadow: 'lg', shadow: '1px 1px 5px 3px rgba(159, 122, 234, 0.6)' }}
-                                                                boxShadow={'lg'}
-                                                                key={i}>
-                                                                <VStack px={3} py={2} alignItems={'flex-start'} w="50%" h="100%">
-                                                                    <Heading size={'sm'} fontWeight={700} fontFamily={'monospace'} color={'purple.400'}>
-                                                                        {item.name}
-                                                                    </Heading>
-                                                                    <HStack>
-                                                                        <Icon as={BiTimeFive} />
-                                                                        <Text
-                                                                            fontSize={'10px'}
-                                                                            fontWeight={700}>
-                                                                            
-                                                                        </Text>
-                                                                    </HStack>
 
-                                                                </VStack>
-                                                            </HStack>
-                                                        ))
-                                                    ) : (<Box>No tasks</Box>)
-                                                }
+                                                    {
+                                                        Tasks && Tasks.length > 0 ? (
+                                                            Tasks?.map((item, i) => (
+                                                                <AccordionItem
+                                                                    onClick={() => { GetATask(item.id) }}
+                                                                    w="100%"
+                                                                    minH="15vh"
+                                                                    cursor={'pointer'}
+                                                                    borderRadius={3}
+                                                                    transitionDelay={'100ms'}
+                                                                    transitionDuration={'500ms'}
+                                                                    _hover={{ boxShadow: 'lg', shadow: '1px 1px 5px 3px rgba(159, 122, 234, 0.6)' }}
+                                                                    boxShadow={'lg'}
+                                                                    key={i}>
+                                                                    <h2>
+                                                                        <AccordionButton
+
+                                                                            w="100%" h="100%">
+                                                                            <VStack
+                                                                                alignItems={'flex-start'}
+                                                                                w="50%" h="100%">
+
+
+                                                                                <Heading
+                                                                                    noOfLines={1}
+                                                                                    size={'sm'} fontWeight={700} fontFamily={'monospace'} color={'purple.400'}>
+                                                                                    {item.name}
+                                                                                </Heading>
+                                                                                <HStack alignItems={'flex-start'}>
+                                                                                    {
+                                                                                        item.tags && item.tags.length > 0 ? (
+                                                                                            item.tags?.map((tag, i) => (
+                                                                                                <Tag
+                                                                                                    size={'sm'}
+                                                                                                    key={i} color={'white'} bg={tag.tag_fg}>
+                                                                                                    {tag.name}
+                                                                                                </Tag>
+                                                                                            ))
+                                                                                        ) : (<Box>No tags</Box>)
+                                                                                    }
+                                                                                </HStack>
+
+                                                                            </VStack>
+                                                                        </AccordionButton>
+                                                                    </h2>
+                                                                    <AccordionPanel w="100%" h="max-content">
+                                                                        {
+                                                                            OneTask && OneTask.id !== '' ? (
+                                                                                <Box>
+                                                                                    <VStack alignItems={'flex-start'}>
+                                                                                        <Input
+                                                                                            type="text"
+                                                                                            value={OneTask.name}
+                                                                                            onChange={(e) => {
+                                                                                                SetOneTask(prevState => ({
+                                                                                                    ...prevState,
+                                                                                                    name: e.target.value
+                                                                                                }))
+                                                                                            }}
+                                                                                        />
+                                                                                        <Textarea type="text"
+                                                                                            value={OneTask.description}
+                                                                                            onChange={(e) => {
+                                                                                                SetOneTask(prevState => ({
+                                                                                                    ...prevState,
+                                                                                                    text_content: e.target.value,
+                                                                                                    description: e.target.value
+                                                                                                }))
+                                                                                            }} />
+                                                                                        <HStack w="100%">
+                                                                                            <Text>
+                                                                                                Tags
+                                                                                            </Text>
+                                                                                            {
+                                                                                                OneTask.tags && OneTask.tags.length > 0 ? (
+                                                                                                    OneTask.tags?.map((tag, i) => (
+                                                                                                        <HStack spacing={1}>
+                                                                                                            <Tag
+                                                                                                                size={'sm'}
+                                                                                                                key={i} color={'white'} bg={tag.tag_fg}>
+                                                                                                                {tag.name}
+                                                                                                            </Tag>
+                                                                                                            <Icon
+                                                                                                            _active={{color:'white'}} as={ImCancelCircle} size={'md'} />
+                                                                                                        </HStack>
+
+                                                                                                    ))
+                                                                                                ) : (<Box>
+                                                                                                    Hello
+                                                                                                </Box>)
+
+                                                                                            }
+                                                                                        </HStack>
+                                                                                    </VStack>
+                                                                                </Box>
+                                                                            ) : (<Box>
+                                                                                Something went wrong</Box>)
+                                                                        }
+                                                                    </AccordionPanel>
+                                                                </AccordionItem>
+                                                            ))
+                                                        ) : (<Box>No tasks</Box>)
+                                                    }
+                                                </Accordion>
                                             </VStack>
                                         </DrawerBody>
 
