@@ -111,7 +111,7 @@ function Popup() {
 
 
     useEffect(() => {
-        if (typeof (Code) == undefined) {
+        if (typeof (Code) !== undefined) {
             const GetMyAccessToken = async () => {
 
                 const data = await fetch(`https://api.clickup.com/api/v2/oauth/token?client_id=BZZXK4XXFJY7N4W2DUHC51GJUXXTZJV6&client_secret=NNTF60UY0728Z2XPM0YXKJGCVQIHFP69A1TTV2UGJWYMNPU9B60C5MAFTFI8T3NL&code=${Code}`, {
@@ -122,7 +122,7 @@ function Popup() {
                     }
                 })
                 const jdata = await data.json()
-                chrome.storage.sync.set({ 'access_token': jdata.access_token })
+                await chrome.storage.sync.set({ 'access_token': jdata.access_token })
             }
             GetMyAccessToken()
         }
@@ -136,12 +136,13 @@ function Popup() {
     chrome.storage.sync.get('access_token', function (access_token) {
         if (access_token) {
             setAccessToken(access_token.access_token)
+
         }
     })
 
 
     useEffect(() => {
-        if (AccessToken.length > 0) {
+        if (typeof (AccessToken) !== undefined) {
             const GetMyteams = async () => {
 
                 const data = await fetch("https://api.clickup.com/api/v2/team", {
@@ -157,7 +158,7 @@ function Popup() {
             }
             GetMyteams()
         }
-    }, [AccessToken, AccessToken.length])
+    }, [AccessToken])
 
 
 
@@ -177,7 +178,7 @@ function Popup() {
 
     useEffect(() => {
         const GetMySpaces = async () => {
-            if (currentTeam.length > 0) {
+            if (typeof (currentTeam) !== undefined) {
                 const data = await fetch(`https://api.clickup.com/api/v2/team/${currentTeam}/space`, {
                     method: 'GET',
                     headers: {
@@ -191,7 +192,7 @@ function Popup() {
 
         }
         GetMySpaces()
-    }, [currentTeam.length])
+    }, [currentTeam])
 
 
 
@@ -260,7 +261,7 @@ function Popup() {
 
 
     useEffect(() => {
-        if (currentList.length > 0) {
+        if (typeof (currentList) !== undefined) {
             const GetMyTasks = async () => {
                 const data = await fetch(`https://api.clickup.com/api/v2/list/${currentList}/task`, {
                     method: 'GET',
@@ -278,6 +279,9 @@ function Popup() {
     }, [currentList, currentList.length])
 
     const GetATask = async (id) => {
+
+
+
         const data = await fetch(`https://api.clickup.com/api/v2/task/${id}`, {
             method: 'GET',
             headers: {
@@ -286,7 +290,10 @@ function Popup() {
             }
         })
         const jdata = await data.json()
+
         SetOneTask(jdata)
+
+
 
 
     }
@@ -326,24 +333,29 @@ function Popup() {
                                             <PopoverBody>
                                                 <VStack w="100%" spacing={3}>
                                                     {
-                                                        AllTeams?.map((item, i) => (
-                                                            <HStack spacing={3} key={i}>
-                                                                <Avatar
-                                                                    key={i}
-                                                                    src={item.avatar}
-                                                                    cursor={'pointer'} size={'sm'}>
-                                                                    <AvatarBadge boxSize='1.25em' bg='green.500' />
-                                                                </Avatar>
-                                                                <Button
-                                                                    bg="white"
-                                                                    size={'sm'}
-                                                                    onClick={() => setCurrentTeamWithGoogle(item.id)}
-                                                                    _hover={{ bg: 'purple.400', color: 'white' }}
-                                                                >
-                                                                    {item.name}
-                                                                </Button>
-                                                            </HStack>
-                                                        ))
+                                                        AllTeams && AllTeams.length > 0 ? (
+                                                            AllTeams?.map((item, i) => (
+                                                                <Box spacing={3} key={i}>
+                                                                    <Avatar
+                                                                        key={i}
+                                                                        src={item.avatar}
+                                                                        cursor={'pointer'} size={'sm'}>
+                                                                        <AvatarBadge boxSize='1.25em' bg='green.500' />
+                                                                    </Avatar>
+                                                                    <Button
+                                                                        bg="white"
+                                                                        size={'sm'}
+                                                                        onClick={() => setCurrentTeamWithGoogle(item.id)}
+                                                                        _hover={{ bg: 'purple.400', color: 'white' }}
+                                                                    >
+                                                                        {item.name}
+                                                                    </Button>
+                                                                </Box>
+                                                            ))
+                                                        ) : (<Box>
+                                                            No teams
+                                                        </Box>)
+
                                                     }
 
                                                 </VStack>
@@ -500,7 +512,7 @@ function Popup() {
                                                         Tasks && Tasks.length > 0 ? (
                                                             Tasks?.map((item, i) => (
                                                                 <AccordionItem
-                                                                    onClick={() => { GetATask(item.id) }}
+
                                                                     w="100%"
                                                                     minH="15vh"
                                                                     cursor={'pointer'}
@@ -511,41 +523,43 @@ function Popup() {
                                                                     boxShadow={'lg'}
                                                                     key={i}>
                                                                     <h2>
-                                                                        <AccordionButton
-
-                                                                            w="100%" h="100%">
+                                                                        <HStack alignItems={'center'} w="100%" h="100%">
                                                                             <VStack
+                                                                                px={4}
+                                                                                py={2}
                                                                                 alignItems={'flex-start'}
-                                                                                w="50%" h="100%">
+                                                                                w="80%" h="100%">
 
 
                                                                                 <Heading
                                                                                     noOfLines={1}
-                                                                                    size={'sm'} fontWeight={700} fontFamily={'monospace'} color={'purple.400'}>
+                                                                                    size={'md'} fontWeight={700} fontFamily={'monospace'} color={'purple.400'}>
                                                                                     {item.name}
                                                                                 </Heading>
                                                                                 <HStack alignItems={'flex-start'}>
                                                                                     {
                                                                                         item.tags && item.tags.length > 0 ? (
-                                                                                            item.tags?.map((tag, i) => (
-                                                                                                <Tag
-                                                                                                    size={'sm'}
-                                                                                                    key={i} color={'white'} bg={tag.tag_fg}>
-                                                                                                    {tag.name}
-                                                                                                </Tag>
-                                                                                            ))
+                                                                                            <Text fontSize={'10px'} fontWeight={700}>
+                                                                                                {item.tags.length} Tag
+                                                                                            </Text>
                                                                                         ) : (<Box>No tags</Box>)
                                                                                     }
                                                                                 </HStack>
 
                                                                             </VStack>
-                                                                        </AccordionButton>
+                                                                            <AccordionButton onClick={() => { GetATask(item.id) }} w="20%">
+                                                                                <AccordionIcon />
+                                                                            </AccordionButton>
+                                                                        </HStack>
+
                                                                     </h2>
+
                                                                     <AccordionPanel w="100%" h="max-content">
                                                                         {
                                                                             OneTask && OneTask.id !== '' ? (
                                                                                 <Box>
                                                                                     <VStack alignItems={'flex-start'}>
+                                                                                        <FormLabel>Title</FormLabel>
                                                                                         <Input
                                                                                             type="text"
                                                                                             value={OneTask.name}
@@ -556,6 +570,7 @@ function Popup() {
                                                                                                 }))
                                                                                             }}
                                                                                         />
+                                                                                        <FormLabel>Description</FormLabel>
                                                                                         <Textarea type="text"
                                                                                             value={OneTask.description}
                                                                                             onChange={(e) => {
@@ -565,21 +580,41 @@ function Popup() {
                                                                                                     description: e.target.value
                                                                                                 }))
                                                                                             }} />
-                                                                                        <HStack w="100%">
-                                                                                            <Text>
-                                                                                                Tags
-                                                                                            </Text>
+                                                                                        <Text>
+                                                                                            Tags
+                                                                                        </Text>
+                                                                                        <HStack flexWrap={'wrap'} h="max-content" w="100%" spacing={1}>
                                                                                             {
                                                                                                 OneTask.tags && OneTask.tags.length > 0 ? (
                                                                                                     OneTask.tags?.map((tag, i) => (
-                                                                                                        <HStack spacing={1}>
+                                                                                                        <HStack py={1} spacing={1}>
                                                                                                             <Tag
                                                                                                                 size={'sm'}
                                                                                                                 key={i} color={'white'} bg={tag.tag_fg}>
                                                                                                                 {tag.name}
                                                                                                             </Tag>
                                                                                                             <Icon
-                                                                                                            _active={{color:'white'}} as={ImCancelCircle} size={'md'} />
+                                                                                                                onClick={() => {
+
+                                                                                                                    const index = OneTask?.tags.map((a, i) => {
+                                                                                                                        if (a.name === tag.name) {
+                                                                                                                            return i
+                                                                                                                        }
+                                                                                                                    }).join("")
+                                                                                                                    
+
+                                                                                                                    if (index > -1) {
+                                                                                                                        
+                                                                                                                        let clone = OneTask.tags
+                                                                                                                        clone.splice(index, 1)
+                                                                                                                        
+                                                                                                                        SetOneTask((prevState) => ({
+                                                                                                                            ...prevState,
+                                                                                                                            tags: clone
+                                                                                                                        }))
+                                                                                                                    }
+                                                                                                                }}
+                                                                                                                _active={{ color: 'white' }} as={ImCancelCircle} size={'md'} />
                                                                                                         </HStack>
 
                                                                                                     ))
@@ -589,6 +624,29 @@ function Popup() {
 
                                                                                             }
                                                                                         </HStack>
+                                                                                        <HStack>
+
+
+                                                                                            {
+                                                                                                OneTask.assignees && OneTask.assignees.length > 0 ? (
+                                                                                                    OneTask.assignees?.map((ass, i) => (
+                                                                                                        <HStack key={i} spacing={1}>
+                                                                                                            <Tag
+                                                                                                                size={'sm'}
+                                                                                                                key={i} color={'white'} bg={tag.tag_fg}>
+                                                                                                                {ass.name}
+                                                                                                            </Tag>
+                                                                                                            <Icon
+                                                                                                                _active={{ color: 'white' }} as={ImCancelCircle} size={'md'} />
+                                                                                                        </HStack>
+                                                                                                    ))
+                                                                                                ) : (<Box>
+                                                                                                    No assignees</Box>)
+                                                                                            }
+                                                                                        </HStack>
+                                                                                            <HStack justifyContent={'flex-end'} alignItems={'flex-end'} w="100%">
+                                                                                                <Button>X</Button>
+                                                                                            </HStack>
                                                                                     </VStack>
                                                                                 </Box>
                                                                             ) : (<Box>
@@ -624,7 +682,7 @@ function Popup() {
                             boxShadow={'xl'}
                             color={'white'}
                             bg={"rgb(159, 122, 234)"}
-                            onClick={() => { onOpen(); GetMySpaces() }}
+                            onClick={() => { onOpen() }}
                         >
                             + Create a task
                         </Button>
@@ -690,7 +748,7 @@ function Popup() {
                                 </Box>
 
                                 <HStack
-                                    marginTop={'10px'}
+                                    py={'10px'}
                                     w="100%" h="25%" justifyContent={'space-between'}>
 
                                     <FormControl w="30%">
