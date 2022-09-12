@@ -98,7 +98,7 @@ function Popup() {
     chrome.storage.sync.get('code', function (code) {
         setCode(code.code)
 
-        if (Code.length > 0) {
+        if (Code.length < 0) {
 
 
             const GetMyAccessToken = async () => {
@@ -115,6 +115,7 @@ function Popup() {
             }
             GetMyAccessToken()
         }
+
 
     })
 
@@ -258,6 +259,11 @@ function Popup() {
             body: JSON.stringify(obj)
         })
         const jdata = await data.json()
+        setCurrentList('')
+        setTitle('')
+        setDescription('')
+        setTags([])
+        SetAssigned([])
 
     }
 
@@ -276,6 +282,7 @@ function Popup() {
                     }
                 })
                 const jdata = await data.json()
+              
                 SetTasks(jdata.tasks)
 
             }
