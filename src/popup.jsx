@@ -31,6 +31,7 @@ import {
     PopoverAnchor,
     Accordion,
     AccordionItem,
+    useToast,
     AccordionButton,
     AccordionPanel,
     DrawerCloseButton,
@@ -73,7 +74,7 @@ function Popup() {
 
 
     const [AllTeams, SetTeams] = useState([])
-
+    const toast = useToast()
 
     const [currentTeam, setCurrentTeam] = useState('')
     const [showTag, setShowTag] = useState(false)
@@ -259,11 +260,32 @@ function Popup() {
             body: JSON.stringify(obj)
         })
         const jdata = await data.json()
+        if (data.status == 200) {
+            toast({
+                size: 'xs',
+                title: "Task created",
+                status: 'success',
+                duration: 3000,
+                isClosable: true,
+                position: 'top'
+            })
+        }
+        else {
+            toast({
+                size: 'xs',
+                title: "Enter all fields please",
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+                position: 'top'
+            })
+        }
         setCurrentList('')
         setTitle('')
         setDescription('')
         setTags([])
         SetAssigned([])
+
 
     }
 
@@ -282,7 +304,7 @@ function Popup() {
                     }
                 })
                 const jdata = await data.json()
-              
+
                 SetTasks(jdata.tasks)
 
             }
@@ -324,12 +346,32 @@ function Popup() {
             body: JSON.stringify(obj)
         })
         const jdata = await data.json()
+        if (data.status == 200) {
+            toast({
+                size: 'xs',
+                title: "Task updated",
+                status: 'success',
+                duration: 3000,
+                isClosable: true,
+                position: 'top'
+            })
+        }
+        else {
+            toast({
+                size: 'xs',
+                title: "Something went wrong",
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+                position: 'top'
+            })
+        }
 
     }
 
     const DeleteTask = async (id) => {
 
-        await fetch(`https://api.clickup.com/api/v2/task/${id}`, {
+        const data = await fetch(`https://api.clickup.com/api/v2/task/${id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -338,6 +380,28 @@ function Popup() {
         })
 
 
+
+        if (!data) {
+            toast({
+                size: 'xs',
+                title: "Something went wrong",
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+                position: 'top'
+            })
+          
+        }
+        else {
+            toast({
+                size: 'xs',
+                title: "Task deleted",
+                status: 'success',
+                duration: 3000,
+                isClosable: true,
+                position: 'top'
+            })
+        }
         const newTasks = Tasks.filter((ele) => ele.id != id)
         SetTasks(newTasks)
         SetOneTask({})
