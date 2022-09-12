@@ -45,6 +45,10 @@ import { AiFillEdit } from 'react-icons/ai'
 import { RiFoldersLine } from 'react-icons/ri'
 import { AiOutlineUnorderedList } from 'react-icons/ai'
 import { ImCancelCircle } from 'react-icons/im'
+import { TiTickOutline } from 'react-icons/ti'
+import { AiFillDelete } from 'react-icons/ai'
+
+
 function Popup() {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const { isOpen: MOpen, onOpen: MOnOpen, onClose: MOnClose } = useDisclosure()
@@ -93,6 +97,25 @@ function Popup() {
 
     chrome.storage.sync.get('code', function (code) {
         setCode(code.code)
+
+        if (Code.length > 0) {
+
+
+            const GetMyAccessToken = async () => {
+
+                const data = await fetch(`https://api.clickup.com/api/v2/oauth/token?client_id=BZZXK4XXFJY7N4W2DUHC51GJUXXTZJV6&client_secret=NNTF60UY0728Z2XPM0YXKJGCVQIHFP69A1TTV2UGJWYMNPU9B60C5MAFTFI8T3NL&code=${Code}`, {
+                    method: 'POST',
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                const jdata = await data.json()
+                await chrome.storage.sync.set({ 'access_token': jdata.access_token })
+            }
+            GetMyAccessToken()
+        }
+
     })
 
 
@@ -110,27 +133,6 @@ function Popup() {
 
 
 
-    useEffect(() => {
-        if (typeof (Code) !== undefined) {
-            const GetMyAccessToken = async () => {
-
-                const data = await fetch(`https://api.clickup.com/api/v2/oauth/token?client_id=BZZXK4XXFJY7N4W2DUHC51GJUXXTZJV6&client_secret=NNTF60UY0728Z2XPM0YXKJGCVQIHFP69A1TTV2UGJWYMNPU9B60C5MAFTFI8T3NL&code=${Code}`, {
-                    method: 'POST',
-                    cache: 'no-cache',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                })
-                const jdata = await data.json()
-                await chrome.storage.sync.set({ 'access_token': jdata.access_token })
-            }
-            GetMyAccessToken()
-        }
-        else {
-            console.log("Hello")
-        }
-
-    }, [Code])
 
 
     chrome.storage.sync.get('access_token', function (access_token) {
@@ -261,7 +263,10 @@ function Popup() {
 
 
     useEffect(() => {
-        if (typeof (currentList) !== undefined) {
+
+        if (currentList.length > 0) {
+
+
             const GetMyTasks = async () => {
                 const data = await fetch(`https://api.clickup.com/api/v2/list/${currentList}/task`, {
                     method: 'GET',
@@ -276,11 +281,11 @@ function Popup() {
             }
             GetMyTasks()
         }
-    }, [currentList, currentList.length])
+
+
+    }, [currentList.length])
 
     const GetATask = async (id) => {
-
-
 
         const data = await fetch(`https://api.clickup.com/api/v2/task/${id}`, {
             method: 'GET',
@@ -290,13 +295,48 @@ function Popup() {
             }
         })
         const jdata = await data.json()
-
         SetOneTask(jdata)
+    }
+
+    const UpdateTask = async (updated, id) => {
+        let obj = {
+
+            name: updated.name,
+            description: updated.description,
+            tags: updated.tags
+        }
 
 
 
+        const data = await fetch(`https://api.clickup.com/api/v2/task/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                "Authorization": AccessToken,
+            },
+            body: JSON.stringify(obj)
+        })
+        const jdata = await data.json()
 
     }
+
+    const DeleteTask = async (id) => {
+
+        await fetch(`https://api.clickup.com/api/v2/task/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                "Authorization": AccessToken
+            }
+        })
+
+
+        const newTasks = Tasks.filter((ele) => ele.id != id)
+        SetTasks(newTasks)
+        SetOneTask({})
+
+    }
+
 
     return (AccessToken) ? (
         <Box w="400px" h="500px">
@@ -547,7 +587,7 @@ function Popup() {
                                                                                 </HStack>
 
                                                                             </VStack>
-                                                                            <AccordionButton onClick={() => { GetATask(item.id) }} w="20%">
+                                                                            <AccordionButton onClick={() => { GetATask(item?.id) }} w="20%">
                                                                                 <AccordionIcon />
                                                                             </AccordionButton>
                                                                         </HStack>
@@ -593,7 +633,7 @@ function Popup() {
                                                                                                                 key={i} color={'white'} bg={tag.tag_fg}>
                                                                                                                 {tag.name}
                                                                                                             </Tag>
-                                                                                                            <Icon
+                                                                                                            {/* <Icon
                                                                                                                 onClick={() => {
 
                                                                                                                     const index = OneTask?.tags.map((a, i) => {
@@ -601,20 +641,20 @@ function Popup() {
                                                                                                                             return i
                                                                                                                         }
                                                                                                                     }).join("")
-                                                                                                                    
+
 
                                                                                                                     if (index > -1) {
-                                                                                                                        
+
                                                                                                                         let clone = OneTask.tags
                                                                                                                         clone.splice(index, 1)
-                                                                                                                        
+
                                                                                                                         SetOneTask((prevState) => ({
                                                                                                                             ...prevState,
                                                                                                                             tags: clone
                                                                                                                         }))
                                                                                                                     }
                                                                                                                 }}
-                                                                                                                _active={{ color: 'white' }} as={ImCancelCircle} size={'md'} />
+                                                                                                                _active={{ color: 'white' }} as={ImCancelCircle} size={'md'} /> */}
                                                                                                         </HStack>
 
                                                                                                     ))
@@ -633,7 +673,7 @@ function Popup() {
                                                                                                         <HStack key={i} spacing={1}>
                                                                                                             <Tag
                                                                                                                 size={'sm'}
-                                                                                                                key={i} color={'white'} bg={tag.tag_fg}>
+                                                                                                                key={i} color={'white'}>
                                                                                                                 {ass.name}
                                                                                                             </Tag>
                                                                                                             <Icon
@@ -644,9 +684,20 @@ function Popup() {
                                                                                                     No assignees</Box>)
                                                                                             }
                                                                                         </HStack>
-                                                                                            <HStack justifyContent={'flex-end'} alignItems={'flex-end'} w="100%">
-                                                                                                <Button>X</Button>
-                                                                                            </HStack>
+                                                                                        <HStack justifyContent={'flex-end'} alignItems={'flex-end'} w="100%">
+                                                                                            <IconButton size={'xs'} icon={<AiFillDelete />}
+                                                                                                color={'white'}
+                                                                                                bg="red.400"
+                                                                                                onClick={() => { DeleteTask(OneTask?.id) }} />
+                                                                                            <IconButton
+                                                                                                size={'xs'}
+                                                                                                color={'white'}
+                                                                                                bg={'green.400'}
+                                                                                                onClick={() => UpdateTask(OneTask, OneTask?.id)}
+                                                                                                icon={<TiTickOutline />}
+                                                                                            />
+
+                                                                                        </HStack>
                                                                                     </VStack>
                                                                                 </Box>
                                                                             ) : (<Box>
