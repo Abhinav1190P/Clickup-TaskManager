@@ -98,27 +98,29 @@ function Popup() {
 
     chrome.storage.sync.get('code', function (code) {
         setCode(code.code)
-
-        if (Code.length < 0) {
-
-
-            const GetMyAccessToken = async () => {
-
-                const data = await fetch(`https://api.clickup.com/api/v2/oauth/token?client_id=BZZXK4XXFJY7N4W2DUHC51GJUXXTZJV6&client_secret=NNTF60UY0728Z2XPM0YXKJGCVQIHFP69A1TTV2UGJWYMNPU9B60C5MAFTFI8T3NL&code=${Code}`, {
-                    method: 'POST',
-                    cache: 'no-cache',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                })
-                const jdata = await data.json()
-                await chrome.storage.sync.set({ 'access_token': jdata.access_token })
-            }
-            GetMyAccessToken()
+        if (AccessToken === '') {
+            GetMyAccessToken(code.code)
         }
-
-
     })
+
+
+
+
+    const GetMyAccessToken = async (Code) => {
+
+        const data = await fetch(`https://api.clickup.com/api/v2/oauth/token?client_id=BZZXK4XXFJY7N4W2DUHC51GJUXXTZJV6&client_secret=NNTF60UY0728Z2XPM0YXKJGCVQIHFP69A1TTV2UGJWYMNPU9B60C5MAFTFI8T3NL&code=${Code}`, {
+            method: 'POST',
+            cache: 'no-cache',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        const jdata = await data.json()
+        chrome.storage.sync.set({ 'access_token': jdata.access_token })
+    }
+
+
+
 
 
     chrome.storage.sync.get('team', function (team_id) {
@@ -146,7 +148,7 @@ function Popup() {
 
 
     useEffect(() => {
-        if (typeof (AccessToken) !== undefined) {
+        if (AccessToken !== '') {
             const GetMyteams = async () => {
 
                 const data = await fetch("https://api.clickup.com/api/v2/team", {
@@ -182,7 +184,7 @@ function Popup() {
 
     useEffect(() => {
         const GetMySpaces = async () => {
-            if (typeof (currentTeam) !== undefined) {
+            if (currentTeam !== '') {
                 const data = await fetch(`https://api.clickup.com/api/v2/team/${currentTeam}/space`, {
                     method: 'GET',
                     headers: {
@@ -290,29 +292,21 @@ function Popup() {
     }
 
 
-    useEffect(() => {
 
-        if (currentList.length > 0) {
-
-
-            const GetMyTasks = async () => {
-                const data = await fetch(`https://api.clickup.com/api/v2/list/${currentList}/task`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        "Authorization": AccessToken
-                    }
-                })
-                const jdata = await data.json()
-
-                SetTasks(jdata.tasks)
-
+    const GetMyTasks = async (currentList) => {
+        const data = await fetch(`https://api.clickup.com/api/v2/list/${currentList}/task`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                "Authorization": AccessToken
             }
-            GetMyTasks()
-        }
+        })
+        const jdata = await data.json()
 
+        SetTasks(jdata.tasks)
 
-    }, [currentList.length])
+    }
+
 
     const GetATask = async (id) => {
 
@@ -390,7 +384,7 @@ function Popup() {
                 isClosable: true,
                 position: 'top'
             })
-          
+
         }
         else {
             toast({
@@ -468,7 +462,9 @@ function Popup() {
                                                         </Box>)
 
                                                     }
-
+                                                    <Button onClick={() => { chrome.storage.sync.clear() }} bg="purple.400" size={'xs'} color="white">
+                                                        Logout
+                                                    </Button>
                                                 </VStack>
                                             </PopoverBody>
                                         </PopoverContent>
@@ -567,7 +563,7 @@ function Popup() {
 
                                                                                     <Link
                                                                                         ref={btn3Ref}
-                                                                                        onClick={() => { setCurrentList(item2.id); LOnOpen() }}
+                                                                                        onClick={() => { GetMyTasks(item2.id); LOnOpen() }}
                                                                                         color={'purple.400'}
                                                                                         px={3}
                                                                                         fontWeight={700} fontSize={'sm'}>
@@ -1126,8 +1122,10 @@ function Popup() {
 
 
         </Box>
-    ) : (<Box>
-        Login
+    ) : (<Box h="200px" py={6} px={8} w="300px">
+
+        <Heading fontFamily={'monospace'} fontWeight={700} >You're not authenticated!</Heading>
+        <Button onClick={() => { window.open("https://app.clickup.com/api?client_id=BZZXK4XXFJY7N4W2DUHC51GJUXXTZJV6&redirect_uri=https://dazzling-quokka-2f23ea.netlify.app/callback", "ClickUp Auth") }} bg="purple.400" color="white">Connect with clickup</Button>
     </Box>)
 
 
