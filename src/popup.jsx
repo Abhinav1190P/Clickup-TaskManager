@@ -513,7 +513,8 @@ function Popup() {
                                 allowToggle={true}
                                 w="100%">
 
-                                {
+                                { 
+                                Spaces && Spaces.length > 0 ? (
                                     Spaces?.map((item, i) => (
                                         <AccordionItem
 
@@ -544,9 +545,9 @@ function Popup() {
                                                 {
                                                     Folders && Folders.length > 0 ? (
                                                         Folders?.map((item, i) => (
-                                                            <Box>
+                                                            <Box key={i}>
 
-                                                                <VStack py={3} alignItems={'flex-start'} key={i} px={3}>
+                                                                <VStack py={3} alignItems={'flex-start'}  px={3}>
 
                                                                     <Link
                                                                         color={'purple.400'}
@@ -591,6 +592,10 @@ function Popup() {
                                             </AccordionPanel>
                                         </AccordionItem>
                                     ))
+                                ):(
+                                    <Box>Choose a workspace</Box>
+                                )
+                                    
 
                                 }
                                 <Divider w="100%" />
