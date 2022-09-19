@@ -412,8 +412,10 @@ function Popup() {
                         <Box w="100%" h="100%" >
                             <HStack p={3} w="100%" h="100%" alignItems={'center'} justifyContent={'space-between'}>
                                 <Image
-                                    w="30%"
-                                    src='./clickup.png' alt="clickup" />
+                                mt={2}
+                                   w={'50px'}
+                                   h={'50px'}
+                                    src='./todoist.jpeg' alt="clickup" />
 
                                 <Stack direction='row' spacing={4} pr={3} py={2}>
 
@@ -513,89 +515,89 @@ function Popup() {
                                 allowToggle={true}
                                 w="100%">
 
-                                { 
-                                Spaces && Spaces.length > 0 ? (
-                                    Spaces?.map((item, i) => (
-                                        <AccordionItem
+                                {
+                                    Spaces && Spaces.length > 0 ? (
+                                        Spaces?.map((item, i) => (
+                                            <AccordionItem
 
-                                            onClick={() => { setCurrentSpace(item.id) }}
-                                            w="100%" minH="15vh" key={i}>
-                                            <h2>
-                                                <AccordionButton>
-                                                    <Box flex='1' textAlign='left'>
-                                                        <VStack
-                                                            alignItems={'flex-start'}
-                                                            w="100%" h="100%">
-                                                            <Heading size={'lg'} fontWeight={700} color={'purple.400'} fontFamily={'monospace'}>
-                                                                {item.name}
-                                                            </Heading>
-                                                            <Text fontWeight={600} fontSize={'sm'}>
-                                                                {item.id}
-                                                            </Text>
-                                                        </VStack>
+                                                onClick={() => { setCurrentSpace(item.id) }}
+                                                w="100%" minH="15vh" key={i}>
+                                                <h2>
+                                                    <AccordionButton>
+                                                        <Box flex='1' textAlign='left'>
+                                                            <VStack
+                                                                alignItems={'flex-start'}
+                                                                w="100%" h="100%">
+                                                                <Heading size={'lg'} fontWeight={700} color={'purple.400'} fontFamily={'monospace'}>
+                                                                    {item.name}
+                                                                </Heading>
+                                                                <Text fontWeight={600} fontSize={'sm'}>
+                                                                    {item.id}
+                                                                </Text>
+                                                            </VStack>
 
-                                                    </Box>
-                                                    <AccordionIcon />
-                                                </AccordionButton>
-                                            </h2>
-                                            <AccordionPanel pb={4}>
-                                                <Text fontWeight={700}>
-                                                    <Icon as={RiFoldersLine} /> Folders:
-                                                </Text>
-                                                {
-                                                    Folders && Folders.length > 0 ? (
-                                                        Folders?.map((item, i) => (
-                                                            <Box key={i}>
+                                                        </Box>
+                                                        <AccordionIcon />
+                                                    </AccordionButton>
+                                                </h2>
+                                                <AccordionPanel pb={4}>
+                                                    <Text fontWeight={700}>
+                                                        <Icon as={RiFoldersLine} /> Folders:
+                                                    </Text>
+                                                    {
+                                                        Folders && Folders.length > 0 ? (
+                                                            Folders?.map((item, i) => (
+                                                                <Box key={i}>
 
-                                                                <VStack py={3} alignItems={'flex-start'}  px={3}>
+                                                                    <VStack py={3} alignItems={'flex-start'} px={3}>
 
-                                                                    <Link
-                                                                        color={'purple.400'}
-                                                                        fontWeight={700} fontSize={'lg'}>
-                                                                        + {item.name}
-                                                                    </Link>
-                                                                    <Text fontWeight={700}>
-                                                                        <Icon as={AiOutlineUnorderedList} /> Lists:
-                                                                    </Text>
-                                                                    {
-                                                                        item.lists && item.lists.length > 0 ? (
-                                                                            item.lists?.map((item2, i) => (
-                                                                                <Box w="100%" key={i}>
+                                                                        <Link
+                                                                            color={'purple.400'}
+                                                                            fontWeight={700} fontSize={'lg'}>
+                                                                            + {item.name}
+                                                                        </Link>
+                                                                        <Text fontWeight={700}>
+                                                                            <Icon as={AiOutlineUnorderedList} /> Lists:
+                                                                        </Text>
+                                                                        {
+                                                                            item.lists && item.lists.length > 0 ? (
+                                                                                item.lists?.map((item2, i) => (
+                                                                                    <Box w="100%" key={i}>
 
-                                                                                    <Link
-                                                                                        ref={btn3Ref}
-                                                                                        onClick={() => { GetMyTasks(item2.id); LOnOpen() }}
-                                                                                        color={'purple.400'}
-                                                                                        px={3}
-                                                                                        fontWeight={700} fontSize={'sm'}>
-                                                                                        {"*"} {item2.name}
-                                                                                    </Link>
+                                                                                        <Link
+                                                                                            ref={btn3Ref}
+                                                                                            onClick={() => { GetMyTasks(item2.id); LOnOpen() }}
+                                                                                            color={'purple.400'}
+                                                                                            px={3}
+                                                                                            fontWeight={700} fontSize={'sm'}>
+                                                                                            {"*"} {item2.name}
+                                                                                        </Link>
 
-                                                                                </Box>
-                                                                            ))
-                                                                        ) : (<Box>
-                                                                            No lists
-                                                                        </Box>)
-
-
-                                                                    }
-
-                                                                </VStack>
-
-                                                            </Box>
-                                                        ))
-                                                    ) : (<Box>
-                                                        No folders</Box>)
-                                                }
+                                                                                    </Box>
+                                                                                ))
+                                                                            ) : (<Box>
+                                                                                No lists
+                                                                            </Box>)
 
 
-                                            </AccordionPanel>
-                                        </AccordionItem>
-                                    ))
-                                ):(
-                                    <Box>Choose a workspace</Box>
-                                )
-                                    
+                                                                        }
+
+                                                                    </VStack>
+
+                                                                </Box>
+                                                            ))
+                                                        ) : (<Box>
+                                                            No folders</Box>)
+                                                    }
+
+
+                                                </AccordionPanel>
+                                            </AccordionItem>
+                                        ))
+                                    ) : (
+                                        <Box>Choose a workspace</Box>
+                                    )
+
 
                                 }
                                 <Divider w="100%" />

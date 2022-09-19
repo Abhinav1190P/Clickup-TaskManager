@@ -1,18 +1,3 @@
-
-var contextMenuItem = {
-    "id":"spendMoney",
-    "title":"Add to ClickUp docs",
-    "contexts":["selection"]
-};
-
- chrome.contextMenus.create(contextMenuItem)
-
-chrome.contextMenus.onClicked.addListener(function(clickData){
-    if (clickData.menuItemId == "spendMoney" && clickData.selectionText){
-        chrome.storage.sync.set({'text':clickData.selectionText})
-    }
-})
-
 chrome.tabs.onUpdated.addListener(function(tabid, info, tab) {
     if(tab.url){
         let st = tab.url
