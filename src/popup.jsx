@@ -90,6 +90,7 @@ function Popup() {
     const [currentList, setCurrentList] = useState('')
     const [description, setDescription] = useState('')
     const [title, setTitle] = useState('')
+    const [searchInput,setsearchInput] = useState('')
 
 
     chrome.storage.sync.get('text', function (text) {
@@ -402,7 +403,6 @@ function Popup() {
 
     }
 
-
     return (AccessToken) ? (
         <Box w="400px" h="500px">
 
@@ -415,7 +415,7 @@ function Popup() {
                                 mt={2}
                                    w={'50px'}
                                    h={'50px'}
-                                    src='./todoist.jpeg' alt="clickup" />
+                                    src='./size128.png' alt="clickup" />
 
                                 <Stack direction='row' spacing={4} pr={3} py={2}>
 
@@ -501,6 +501,7 @@ function Popup() {
                             <Flex w="40%" h="100%" alignItems={'center'} justifyContent={'center'}>
                                 <FormControl w="80%">
                                     <Input
+                                    onChange={(e)=>setsearchInput(e.target.value)}
                                         size={'sm'}
                                         placeholder='Search' />
                                 </FormControl>
@@ -517,7 +518,14 @@ function Popup() {
 
                                 {
                                     Spaces && Spaces.length > 0 ? (
-                                        Spaces?.map((item, i) => (
+                                        Spaces.filter((item,i)=>{
+                                            if(item.name.toLowerCase().includes(searchInput)){
+                                                return item
+                                            }
+                                            else{
+                                                return null
+                                            }
+                                        }).map((item, i) => (
                                             <AccordionItem
 
                                                 onClick={() => { setCurrentSpace(item.id) }}
@@ -807,7 +815,10 @@ function Popup() {
                             boxShadow={'xl'}
                             color={'white'}
                             bg={"rgb(159, 122, 234)"}
-                            onClick={() => { onOpen() }}
+                            onClick={() => { onOpen();
+                                SetFolders([])
+                                SetLists([])
+                                 }}
                         >
                             + Create a task
                         </Button>
@@ -905,7 +916,7 @@ function Popup() {
                                             Folder
                                         </FormLabel>
                                         <Select
-                                            onClick={(e) => { setCurrentFolder(e.target.value); GetMyLists() }}
+                                            onChange={(e) => { setCurrentFolder(e.target.value); GetMyLists() }}
                                             isDisabled={Folders && Folders.length > 0 ? false : true}
                                             w="100%%" size={'sm'}>
                                             {
@@ -929,7 +940,7 @@ function Popup() {
                                             Lists
                                         </FormLabel>
                                         <Select
-                                            onClick={(e) => { setCurrentList(e.target.value) }}
+                                            onChange={(e) => { setCurrentList(e.target.value) }}
                                             isDisabled={Folders && Folders.length && currentFolder.length > 0 ? false : true}
                                             w="100%%" size={'sm'}>
                                             {
