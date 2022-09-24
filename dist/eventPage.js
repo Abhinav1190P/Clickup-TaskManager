@@ -1,1 +1,12 @@
-chrome.tabs.onUpdated.addListener((function(e,t,a){if(a.url&&a.url.includes("dazzling-quokka-2f23ea.netlify.app")){let e=a.url?.split("code="),t=e[1];chrome.storage.sync.set({code:t})}}));
+chrome.tabs.onUpdated.addListener(function(tabid, info, tab) {
+    if(tab.url){
+        let st = tab.url
+        
+        if(st.includes("dazzling-quokka-2f23ea.netlify.app")){
+            let arr = tab.url?.split('code=')
+            let code = arr[1]
+            chrome.storage.sync.set({'code':code})
+        }
+        
+    }
+});

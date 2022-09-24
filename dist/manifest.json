@@ -1,7 +1,7 @@
 {
     "name": "To-Doist for ClickUp",
     "description": "Building an extension",
-    "version": "1.0",
+    "version": "1.1",
     "manifest_version": 3,
     "icons":{
         "16":"size16.png",

@@ -45,10 +45,9 @@ import { BsTags } from 'react-icons/bs'
 import { AiFillEdit } from 'react-icons/ai'
 import { RiFoldersLine } from 'react-icons/ri'
 import { AiOutlineUnorderedList } from 'react-icons/ai'
-import { ImCancelCircle } from 'react-icons/im'
 import { TiTickOutline } from 'react-icons/ti'
 import { AiFillDelete } from 'react-icons/ai'
-
+import { BsFillCalendarDateFill } from 'react-icons/bs'
 
 function Popup() {
     const { isOpen, onOpen, onClose } = useDisclosure()
@@ -90,8 +89,8 @@ function Popup() {
     const [currentList, setCurrentList] = useState('')
     const [description, setDescription] = useState('')
     const [title, setTitle] = useState('')
-    const [searchInput,setsearchInput] = useState('')
-
+    const [searchInput, setsearchInput] = useState('')
+    const [dueDate, setdueDate] = useState('')
 
     chrome.storage.sync.get('text', function (text) {
         setJ(text.text)
@@ -252,7 +251,11 @@ function Popup() {
             description: description,
             assignees: Assigned,
             tags: Tags,
+            due_date: dueDate
         }
+        let clone = [...Tasks]
+        clone.push(obj)
+        SetTasks(clone)
 
         const data = await fetch(`https://api.clickup.com/api/v2/list/${currentList}/task`, {
             method: 'POST',
@@ -283,7 +286,7 @@ function Popup() {
                 position: 'top'
             })
         }
-        setCurrentList('')
+
         setTitle('')
         setDescription('')
         setTags([])
@@ -412,9 +415,9 @@ function Popup() {
                         <Box w="100%" h="100%" >
                             <HStack p={3} w="100%" h="100%" alignItems={'center'} justifyContent={'space-between'}>
                                 <Image
-                                mt={2}
-                                   w={'50px'}
-                                   h={'50px'}
+                                    mt={2}
+                                    w={'50px'}
+                                    h={'50px'}
                                     src='./size128.png' alt="clickup" />
 
                                 <Stack direction='row' spacing={4} pr={3} py={2}>
@@ -501,7 +504,7 @@ function Popup() {
                             <Flex w="40%" h="100%" alignItems={'center'} justifyContent={'center'}>
                                 <FormControl w="80%">
                                     <Input
-                                    onChange={(e)=>setsearchInput(e.target.value)}
+                                        onChange={(e) => setsearchInput(e.target.value)}
                                         size={'sm'}
                                         placeholder='Search' />
                                 </FormControl>
@@ -518,11 +521,11 @@ function Popup() {
 
                                 {
                                     Spaces && Spaces.length > 0 ? (
-                                        Spaces.filter((item,i)=>{
-                                            if(item.name.toLowerCase().includes(searchInput)){
+                                        Spaces.filter((item, i) => {
+                                            if (item.name.toLowerCase().includes(searchInput)) {
                                                 return item
                                             }
-                                            else{
+                                            else {
                                                 return null
                                             }
                                         }).map((item, i) => (
@@ -574,7 +577,7 @@ function Popup() {
 
                                                                                         <Link
                                                                                             ref={btn3Ref}
-                                                                                            onClick={() => { GetMyTasks(item2.id); LOnOpen() }}
+                                                                                            onClick={() => { setCurrentList(item2.id); setCurrentFolder(item.id); GetMyTasks(item2.id); LOnOpen() }}
                                                                                             color={'purple.400'}
                                                                                             px={3}
                                                                                             fontWeight={700} fontSize={'sm'}>
@@ -613,7 +616,7 @@ function Popup() {
 
                                     isOpen={LisOpen}
                                     placement='bottom'
-                                    onClose={onClose}
+                                    onClose={LOnClose}
                                     finalFocusRef={btn3Ref}
                                 >
                                     <DrawerOverlay opacity={.8} />
@@ -748,23 +751,6 @@ function Popup() {
                                                                                         </HStack>
                                                                                         <HStack>
 
-
-                                                                                            {
-                                                                                                OneTask.assignees && OneTask.assignees.length > 0 ? (
-                                                                                                    OneTask.assignees?.map((ass, i) => (
-                                                                                                        <HStack key={i} spacing={1}>
-                                                                                                            <Tag
-                                                                                                                size={'sm'}
-                                                                                                                key={i} color={'white'}>
-                                                                                                                {ass.name}
-                                                                                                            </Tag>
-                                                                                                            <Icon
-                                                                                                                _active={{ color: 'white' }} as={ImCancelCircle} size={'md'} />
-                                                                                                        </HStack>
-                                                                                                    ))
-                                                                                                ) : (<Box>
-                                                                                                    No assignees</Box>)
-                                                                                            }
                                                                                         </HStack>
                                                                                         <HStack justifyContent={'flex-end'} alignItems={'flex-end'} w="100%">
                                                                                             <IconButton size={'xs'} icon={<AiFillDelete />}
@@ -791,14 +777,23 @@ function Popup() {
                                                         ) : (<Box>No tasks</Box>)
                                                     }
                                                 </Accordion>
+
                                             </VStack>
                                         </DrawerBody>
 
                                         <DrawerFooter>
-                                            <Button variant='outline' mr={3} onClick={LOnClose}>
-                                                Cancel
+
+                                            <Button
+                                                colorScheme={'purple'}
+                                                onClick={() => {
+                                                    onOpen();
+                                                    SetFolders([])
+                                                    SetLists([])
+                                                }}
+                                                variant='outline' mr={3}>
+                                                Add a task
                                             </Button>
-                                            <Button colorScheme='blue'>Save</Button>
+
                                         </DrawerFooter>
                                     </DrawerContent>
                                 </Drawer>
@@ -810,18 +805,7 @@ function Popup() {
                 </Box>
                 <Box w="100%" h="10%">
                     <Flex w="100%" h="100%" alignItems={'flex-start'} justifyContent={'center'}>
-                        <Button
-                            ref={btnRef}
-                            boxShadow={'xl'}
-                            color={'white'}
-                            bg={"rgb(159, 122, 234)"}
-                            onClick={() => { onOpen();
-                                SetFolders([])
-                                SetLists([])
-                                 }}
-                        >
-                            + Create a task
-                        </Button>
+
                     </Flex>
                 </Box>
                 <Drawer
@@ -832,16 +816,19 @@ function Popup() {
                 >
                     <DrawerOverlay />
                     <DrawerContent
-                        h="470px"
+                        h="500px"
                     >
 
                         <DrawerHeader h="50px">
                             <HStack w="100%">
                                 <Text color={'red.400'}
                                     w="20%"
+                                    cursor={'pointer'}
                                     fontFamily={'monospace'}
                                     fontSize={'md'}
-                                    fontWeight={600}>
+                                    fontWeight={600}
+                                    onClick={() => { onClose() }}
+                                >
                                     Cancel
                                 </Text>
                                 <Flex
@@ -853,17 +840,7 @@ function Popup() {
                                         New task
                                     </Text>
                                 </Flex>
-                                <Button
-                                    bg="white"
-                                    color={'black'}
-                                    _hover={{ bg: '' }}
-                                    _disabled={true}
-                                    w="20%"
-                                    fontFamily={'monospace'}
-                                    fontSize={'md'}
-                                    fontWeight={600}>
-                                    Done
-                                </Button>
+
 
                             </HStack>
                         </DrawerHeader>
@@ -891,23 +868,9 @@ function Popup() {
                                         <FormLabel fontSize={'15px'}>
                                             Space
                                         </FormLabel>
-                                        <Select
-                                            onChange={(e) => { setCurrentSpace(e.target.value) }}
-                                            w="100%%" size={'sm'}>
-                                            {
-                                                Spaces ? (
-                                                    Spaces?.map((item, i) => (
-                                                        <option
-                                                            value={item.id}
-                                                            key={i}>
-                                                            {item.name}
-                                                        </option>
-                                                    ))
-                                                ) : (<option>
-                                                    Err
-                                                </option>)
-                                            }
-                                        </Select>
+                                        <Heading size={'xs'} fontWeight={700} color={'purple.400'} fontFamily={'monospace'}>
+                                            {currentSpace}
+                                        </Heading>
                                     </FormControl>
 
 
@@ -915,48 +878,18 @@ function Popup() {
                                         <FormLabel>
                                             Folder
                                         </FormLabel>
-                                        <Select
-                                            onChange={(e) => { setCurrentFolder(e.target.value); GetMyLists() }}
-                                            isDisabled={Folders && Folders.length > 0 ? false : true}
-                                            w="100%%" size={'sm'}>
-                                            {
-                                                Folders && Folders.length > 0 ? (
-                                                    Folders?.map((item, i) => (
-                                                        <option
-                                                            value={item.id}
-                                                            key={i}>
-                                                            {item.name}
-                                                        </option>
-                                                    ))
-                                                ) : (<option>
-                                                    No folders
-                                                </option>)
-                                            }
-                                        </Select>
+                                        <Heading size={'xs'} fontWeight={700} color={'purple.400'} fontFamily={'monospace'}>
+                                            {currentFolder}
+                                        </Heading>
                                     </FormControl>
 
                                     <FormControl w="30%" fontSize={'15px'}>
                                         <FormLabel>
                                             Lists
                                         </FormLabel>
-                                        <Select
-                                            onChange={(e) => { setCurrentList(e.target.value) }}
-                                            isDisabled={Folders && Folders.length && currentFolder.length > 0 ? false : true}
-                                            w="100%%" size={'sm'}>
-                                            {
-                                                Lists && Lists.length > 0 ? (
-                                                    Lists?.map((item, i) => (
-                                                        <option
-                                                            value={item.id}
-                                                            key={i}>
-                                                            {item.name}
-                                                        </option>
-                                                    ))
-                                                ) : (<option>
-                                                    No lists
-                                                </option>)
-                                            }
-                                        </Select>
+                                        <Heading size={'xs'} fontWeight={700} color={'purple.400'} fontFamily={'monospace'}>
+                                            {currentList}
+                                        </Heading>
                                     </FormControl>
                                 </HStack>
 
@@ -977,11 +910,33 @@ function Popup() {
                                         Tags.length > 0 ? (
                                             <HStack h="100%">
                                                 <Text
+                                                    fontWeight={700}
                                                     cursor={'pointer'}
                                                     onClick={() => { setShowTag(!showTag); MOnOpen() }}
                                                 >
                                                     {Tags.length == 1 ? (1 + " Tag") : ("+ " + (Tags.length - 1) + " Tags")}
                                                 </Text>
+                                                <Text
+                                                    cursor={'pointer'}
+                                                    fontWeight={700}
+                                                >
+                                                    Due date
+                                                </Text>
+                                                <Input
+                                                    w="45%"
+                                                    size={"xs"}
+                                                    onChange={(e) => {
+                                                        let date = e.target.value
+                                                        let y = date.split('-')[0]
+                                                        let m = date.split('-')[1]
+                                                        let d = date.split('-')[2]
+                                                        let a = new Date(y, m, d).valueOf()
+                                                        setdueDate(a)
+                                                    }}
+                                                    type="date" />
+
+
+
                                             </HStack>) : (
                                             <HStack h="100%">
                                                 <Icon
@@ -989,17 +944,41 @@ function Popup() {
                                                     borderRadius={'5'}
                                                     as={BsTags} size={'sm'} />
                                                 <Text
+                                                    fontWeight={700}
                                                     cursor={'pointer'}
                                                     onClick={() => { setShowTag(!showTag); MOnOpen() }}
                                                 >
                                                     Add tags
                                                 </Text>
+
+                                                <Text
+                                                    fontWeight={700}
+                                                    cursor={'pointer'}
+                                                >
+                                                    Due date
+                                                </Text>
+
+                                                <Input
+                                                    w="45%"
+                                                    size={"xs"}
+                                                    onChange={(e) => {
+                                                        let date = e.target.value
+                                                        let y = date.split('-')[0]
+                                                        let m = date.split('-')[1]
+                                                        let d = date.split('-')[2]
+                                                        let a = new Date(y, m, d).valueOf()
+                                                        setdueDate(a)
+                                                    }}
+                                                    type="date" />
+
+
+
                                             </HStack>
                                         )
                                     }
 
 
-                                    {
+                                    {/*  {
                                         Assigned.length > 0 ? (
                                             <HStack h="100%">
                                                 <Text
@@ -1023,7 +1002,7 @@ function Popup() {
                                                 </Text>
                                             </HStack>
                                         )
-                                    }
+                                    } */}
 
                                     <HStack>
 
@@ -1125,13 +1104,11 @@ function Popup() {
                             </ModalContent>
                         </Modal>
                         <DrawerFooter>
-                            <Button variant='outline' mr={3} onClick={onClose}>
-                                Cancel
-                            </Button>
+
                             <Button
                                 type="submit"
                                 onClick={(e) => SendData(e)}
-                                colorScheme='blue'>Save</Button>
+                                colorScheme='purple'>Save</Button>
                         </DrawerFooter>
                     </DrawerContent>
                 </Drawer>
